@@ -1,0 +1,17 @@
+#lang pie
+
+; Is the Nat a donut (zero) or not?
+
+(claim qdonut
+ (-> Nat Atom))
+(define qdonut
+ (lambda (x)
+  (which-Nat x
+   'donut
+   (lambda (n-1) 'not-donut))))
+
+(qdonut 0)
+
+(qdonut 1)
+
+(qdonut 17)

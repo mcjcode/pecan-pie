@@ -1,0 +1,117 @@
+#lang pie
+
+;; a function for appending lists
+
+(claim step-append
+ (Pi ((E U))
+  (-> E (List E) (List E)
+       (List E))))
+(define step-append
+ (lambda (E)
+  (lambda (e es almost)
+   (:: e almost))))
+
+(claim append
+ (Pi ((E U))
+  (-> (List E) (List E)
+       (List E))))
+(define append
+ (lambda (E)
+  (lambda (xs ys)
+   (rec-List xs
+     ys
+     (step-append E)))))
+
+(claim seven-deadly-sins
+ (List Atom)) 
+(define seven-deadly-sins
+ (:: 'lust
+  (:: 'gluttony
+   (:: 'greed
+    (:: 'sloth
+     (:: 'wrath
+      (:: 'envy
+       (:: 'pride nil))))))))
+
+;; Not clear that this is the order we wan't
+;; things in.  Ah, but it is, because
+;; step-append doesn't append the head of xs
+;; to ys, it appends the head of xs to what
+;; results from when you append the tail of xs
+;; to ys!
+(append Atom seven-deadly-sins seven-deadly-sins)
+
+;; in haskell I'd write this:
+;;
+;; snoc [] e = e
+;; snoc (x:xs) e = x:(snoc xs e)
+;;
+(claim snoc
+ (Pi ((E U))
+     (-> (List E) E
+	 (List E))))
+(define snoc
+ (lambda (E)
+  (lambda (es e)
+   (rec-List es
+    (:: e nil)
+    (step-append E)))))
+   
+(claim toppings
+ (List Atom))
+(define toppings
+ (:: 'potato
+  (:: 'butter nil)))
+
+;; try this
+(snoc Atom toppings 'rye-bread)
+
+;; does it come out to be
+(:: 'potato
+ (:: 'butter
+  (:: 'rye-bread nil)))
+
+;; or do we get
+(:: 'butter
+ (:: 'potato
+  (:: 'rye-bread nil)))
+  
+;; try my hand at reverse
+(claim reverse
+ (Pi ((E U))
+  (-> (List E) (List E))))
+(define reverse
+ (lambda (E)
+  (lambda (es)
+   (rec-List es
+    (the (List E) nil)
+    (lambda (e es almost)
+      (snoc E almost e))))))
+    
+(claim first-five
+ (List Nat))
+(define first-five
+ (:: 1 
+  (:: 2
+   (:: 3
+    (:: 4
+     (:: 5 nil))))))
+
+(claim next-five
+ (List Nat))
+(define next-five
+ (:: 6
+  (:: 7
+   (:: 8
+    (:: 9
+     (:: 10 nil))))))
+
+;; hopefully this gives 1,2,3,4,5,6,7,8,9,10
+(the (List Nat) (append Nat first-five next-five))
+;; and it does.
+
+;; test that snoc does what we want
+(the (List Nat) (snoc Nat (:: 3 (:: 2 (:: 1 nil))) 0))
+
+;; test reverse
+(the (List Nat) (reverse Nat (:: 3 (:: 2 (:: 1 nil)))))

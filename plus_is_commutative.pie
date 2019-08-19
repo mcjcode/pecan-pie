@@ -1,0 +1,190 @@
+#lang pie
+
+;; wish I could load this from a separate
+;; file.
+
+;; define these functions for convenience, for cases
+;; where I would like to write a bare 'add1' but can't
+(claim func_add1 (-> Nat Nat))
+(define func_add1 (lambda (k) (add1 k)))
+
+(claim func_add2 (-> Nat Nat))
+(define func_add2 (lambda (k) (add1 (add1 k))))
+
+;; define the + function "(+ n m) increments 'm' n times" 
+(claim base-+
+ (-> Nat Nat))
+(define base-+
+ (lambda (m) m))
+
+(claim step-+
+ (-> Nat Nat))
+(define step-+
+ func_add1)
+
+(claim +
+ (-> Nat Nat Nat))
+(define +
+ (lambda (n m)
+  (iter-Nat n
+   (base-+ m)
+   step-+)))
+
+;; define the incr function
+(claim incr
+ (-> Nat Nat))
+(define incr
+ (lambda (n)
+  (iter-Nat n
+   1
+   step-+)))
+
+;; note that (+ 1) and incr do very different
+;; things, and have different values, but always
+;; give the same answer.
+
+;; Here are three instances where
+;; we have equality.
+;; (the (= Nat (+ 1 0) (incr 0)) (same 1))
+;; (the (= Nat (+ 1 1) (incr 1)) (same 2))
+;; (the (= Nat (+ 1 2) (incr 2)) (same 3))
+;;
+
+;; Now let's prove that (+ 1 n) *equals* (incr n) (as Nat's)
+
+;; Note how the motive can't just be a (-> Nat ...)
+;; because the ... *depends* on which Nat was passed in.
+;;
+(claim mot-add1=incr
+       (Pi ((n Nat))
+           U))
+(define mot-add1=incr
+       (lambda (n)
+         (= Nat (+ 1 n) (incr n))))
+
+(claim base-add1=incr
+  (= Nat (+ 1 zero) (incr zero)))
+(define base-add1=incr
+  (same (add1 zero)))
+
+(claim step-add1=incr
+       (Pi ((n Nat))
+           (-> (= Nat (+ 1        n ) (incr       n) )
+               (= Nat (+ 1  (add1 n)) (incr (add1 n))))))
+;;             (= Nat (add1 (add1 n)) (add1 (incr n)))))) - the *same* type as the last line
+(define step-add1=incr
+  (lambda (_) ;; (n) note how we can use _ to 'dim' an argument
+    (lambda (n-1case)   ;; takes a proof of the n-1 case
+      (cong n-1case (the (-> Nat Nat) (lambda (n) (add1 n)))))))
+
+;; putting this together, here is our claim
+;; that (+ 1) and incr always give the same answer.
+(claim add1=incr
+ (Pi ((n Nat))
+  (= Nat (+ 1 n) (incr n))))
+;; and here is our proof:
+(define add1=incr
+   (lambda (n)
+     (ind-Nat n
+              mot-add1=incr
+              base-add1=incr
+              step-add1=incr)))
+
+;; Now let's prove that + is commutative
+;; i.e. that (+ n m) *equals* (+ m n)
+;;
+;; This will be an induction on n, but
+;; at each n-step we will have to induct
+;; on m.
+(claim mot-plus-is-commutative-part1
+ (Pi ([m Nat]) U))
+(define mot-plus-is-commutative-part1  
+ (lambda (m) (= Nat (+ m 0) (+ 0 m))))
+  
+(claim base-plus-is-commutative-part1
+ (= Nat (+ 0 0) (+ 0 0)))
+(define base-plus-is-commutative-part1
+ (same 0))
+
+(claim step-plus-is-commutative-part1
+ (Pi ([m-1 Nat])
+  (-> (= Nat (+       m-1  0) (+ 0       m-1))
+      (= Nat (+ (add1 m-1) 0) (+ 0 (add1 m-1))))))
+(define step-plus-is-commutative-part1
+ (lambda (_) ;; (m-1), but we don't need it
+  (lambda (casem-1)
+   (cong casem-1 (the (-> Nat Nat) (lambda (k) (add1 k)))))))
+
+(claim plus-is-commutative-part1
+ (Pi ([m Nat]) ;; note that square brackets here work too.
+  (= Nat (+ m 0) (+ 0 m))))
+(define plus-is-commutative-part1
+ (lambda (m)
+  (ind-Nat m
+           mot-plus-is-commutative-part1
+           base-plus-is-commutative-part1
+           step-plus-is-commutative-part1)))
+
+(claim mot-plus-is-commutative-conclusion
+ (Pi ([n Nat])
+     U))
+(define mot-plus-is-commutative-conclusion
+  (lambda (n)
+    (Pi ([m Nat])
+      (= Nat (+ m n) (+ n m)))))
+
+(claim base-plus-is-commutative-conclusion
+ (Pi ([m Nat])
+  (= Nat (+ m 0) (+ 0 m))))
+(define base-plus-is-commutative-conclusion
+  plus-is-commutative-part1)
+
+                 
+(claim step-plus-is-commutative-conclusion
+       (Pi ([n-1 Nat])
+           (-> (Pi ([m Nat])
+                   (= Nat (+ m       n-1 ) (+       n-1  m)))
+               (Pi ([m Nat])
+                   (= Nat (+ m (add1 n-1)) (+ (add1 n-1) m))))))
+(define step-plus-is-commutative-conclusion
+  (lambda (n-1)
+    (lambda (casen-1) ;; casen-1 is a (Pi ([m]) (= Nat (+ m n-1) (+ n-1 m))) "any m commutes with n-1" (1)
+       (lambda (m)
+         (ind-Nat m
+           (lambda (m) (= Nat (+ m (add1 n-1)) (+ (add1 n-1) m))) ;; the motive
+           (symm (plus-is-commutative-part1 (add1 n-1))) ;; base case, of type (= Nat (+ 0 (add1 n-1))
+                                                         ;;                           (+ (add1 n-1) 0))
+                                                         ;; "0 commutes with (add1 n-1)"
+           (lambda (m-1)
+             (lambda (casem-1) ;; casem-1 is a (= Nat (+ m-1 (add1 n-1))
+                          ;;                     (+ (add1 n-1) m-1))
+                          ;; "m-1 commutes with (add1 n-1)" (2)
+                          ;;
+                          ;; we must return a (= Nat (+ (add1 m-1) (add1 n-1)) (+ (add1 n-1) (add1 m-1)))
+                          ;;
+                          ;; "(add1 m-1) commutes with (add1 n-1)"
+                          ;;
+                          ;; Now we push symbols around in the only way we can.
+                          ;; Note how our evidence lines up out here ------------------|
+               (trans (the (= Nat (+ (add1 m-1) (add1 n-1)) (add1 (+ m-1 (add1 n-1)))) (same (+ (add1 m-1) (add1 n-1)))) ;; step 1
+                      (the (= Nat (add1 (+ m-1 (add1 n-1))) (+ (add1 n-1) (add1 m-1)))
+               (trans (the (= Nat (add1 (+ m-1 (add1 n-1))) (add1 (+ (add1 n-1) m-1))) (cong casem-1 func_add1)) ;; step 2
+                      (the (= Nat (add1 (+ (add1 n-1) m-1)) (+ (add1 n-1) (add1 m-1)))
+               (trans (the (= Nat (add1 (add1 (+ n-1 m-1))) (add1 (add1 (+ m-1 n-1)))) (symm (cong (casen-1 m-1) func_add2))) ;; step 3
+                      (the (= Nat (add1 (add1 (+ m-1 n-1))) (+ (add1 n-1) (add1 m-1)))
+               (trans (the (= Nat (add1 (add1 (+ m-1 n-1))) (add1 (+ (add1 m-1) n-1))) (same (add1 (add1 (+ m-1 n-1))))) ;; step 4
+                      (the (= Nat (add1 (+ (add1 m-1) n-1)) (+ (add1 n-1) (add1 m-1)))
+               (trans (the (= Nat (add1 (+ (add1 m-1) n-1)) (add1 (+ n-1 (add1 m-1)))) (cong (casen-1 (add1 m-1)) func_add1)) ;; step 5
+                      (the (= Nat (add1 (+ n-1 (add1 m-1))) (+ (add1 n-1) (add1 m-1))) (same (add1 (+ n-1 (add1 m-1)))) ;; step 6
+                           )))))))))))))))))
+
+
+(claim plus-is-commutative-conclusion
+ (Pi ([n Nat] [m Nat])
+  (= Nat (+ m n) (+ n m))))
+(define plus-is-commutative-conclusion
+ (lambda (n)
+   (ind-Nat n
+     mot-plus-is-commutative-conclusion
+     base-plus-is-commutative-conclusion
+     step-plus-is-commutative-conclusion)))

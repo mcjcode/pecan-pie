@@ -1,0 +1,87 @@
+#lang pie
+
+;; addition operator for Nat's
+
+(claim base-+
+ (-> Nat Nat))
+(define base-+
+ (lambda (m) m))
+
+(claim step-+
+ (-> Nat Nat))
+(define step-+
+ (lambda (plusn-1)
+  (add1 plusn-1)))
+
+;; When I try to do this, I get
+;; add1: expected valid Pie name
+;;
+;; (define step-+
+;;  add1)
+
+(claim +
+ (-> Nat Nat Nat))
+(define +
+ (lambda (n m)
+  (iter-Nat n
+   (base-+ m)
+   step-+)))
+
+;; multiplication operator for Nat's
+;;
+(claim base-*
+ (-> Nat Nat))
+(define base-*
+ (lambda (m) 0))
+
+(claim step-*
+ (-> Nat Nat
+      Nat))
+(define step-*
+ (lambda (m)
+  (lambda (timesn-1)
+   (+ timesn-1 m))))
+
+(claim *
+ (-> Nat Nat Nat))
+(define *
+ (lambda (n m)
+  (iter-Nat n
+   (base-* m)
+   (step-* m))))
+
+;; 'gauss' function
+;;
+;; (gauss n) = 1 + 2 ... + n
+;;
+(claim step-gauss
+       (-> Nat Nat
+	   Nat))
+
+(define step-gauss
+  (lambda (n-1 gaussn-1)
+    (+ (add1 n-1) gaussn-1)))
+
+(claim gauss
+       (-> Nat Nat))
+(define gauss
+  (lambda (n)
+    (rec-Nat n
+	     0
+	     step-gauss)))
+
+;; Gauss's solution, but I don't know how to divide yet.
+;;
+;; (claim gauss2
+;;        (-> Nat Nat))
+;; (define gauss2
+;;   (lambda (n)
+;;     (/ (* n (add1 n)) 2)))
+
+(+ 8 9) ;; 17
+
+(* 31 11) ;; 341
+
+(+ (* 10 (* 10 10)) (* 9 (* 9 9))) ;; 1729
+
+(gauss 100) ;; 5050, the answer to Gauss' teacher's apocryphal question.
