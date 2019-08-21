@@ -1,0 +1,176 @@
+#lang pie
+
+;; define the + function "(+ n m) increments 'm' n times" 
+(claim base-+
+ (-> Nat Nat))
+(define base-+
+ (lambda (m) m))
+
+(claim step-+
+ (-> Nat Nat))
+(define step-+
+ (lambda (k) (add1 k)))
+
+(claim +
+ (-> Nat Nat Nat))
+(define +
+ (lambda (n m)
+  (iter-Nat n
+   (base-+ m)
+   step-+)))
+
+;; double a Nat.
+(claim double
+ (-> Nat Nat))
+(define double
+  (lambda (n)
+    (iter-Nat n
+       zero
+       (+ 2))))
+
+(claim mot-double-Vec
+  (Pi ([E U] [n Nat])
+      U))
+(define mot-double-Vec
+  (lambda (E n)
+    (-> (Vec E n)
+        (Vec E (double n)))))
+
+(claim base-double-Vec
+  (Pi ([E U])
+    (-> (Vec E 0)
+        (Vec E 0))))
+(define base-double-Vec
+  (lambda (E _) ;; doesn't matter.  only vecnil can be passed in.
+    vecnil))
+
+(claim step-double-Vec
+  (Pi ([E U] [n Nat])
+    (-> (-> (Vec E n) (Vec E (double n)))
+        (-> (Vec E (add1 n)) (Vec E (double (add1 n)))))))
+(define step-double-Vec
+  (lambda (E n casen vs)
+    (vec:: (head vs)
+      (vec:: (head vs)
+        (casen (tail vs))))))
+
+(claim double-Vec
+  (Pi ([E U] [n Nat])
+    (-> (Vec E n)
+        (Vec E (double n)))))
+(define double-Vec
+  (lambda (E n)
+    (ind-Nat n
+      (mot-double-Vec E)
+      (base-double-Vec E)
+      (step-double-Vec E))))
+
+(claim colors
+  (Vec Atom 3))
+(define colors
+  (vec:: 'red
+    (vec:: 'green
+      (vec:: 'blue vecnil))))
+
+(double-Vec Atom 3 colors)
+
+;; Now that we have double-Vec, we can use 'replace'
+;; to define twice-Vec. first we copy/past the definition of twice
+;; and the double-twice proof.  (Note that we reversed the
+;; definitions of twice and double in earlier files.
+
+(claim twice
+ (-> Nat Nat))
+(define twice
+  (lambda (n) (+ n n)))
+
+;; note that we are inducting over the second
+;; argument 'm'
+(claim mot-add1+=+add1
+ (-> Nat Nat U))
+(define mot-add1+=+add1
+ (lambda (n m)
+     (= Nat (add1 (+ m n)) (+ m (add1 n)))))
+
+(claim base-add1+=+add1
+  (Pi ([n Nat])
+    (= Nat (add1 (+ 0 n)) (+ 0 (add1 n)))))
+(define base-add1+=+add1
+  (lambda (n)
+    (same (add1 n))))
+
+(claim step-add1+=+add1
+  (Pi ([n Nat] [m Nat])
+      (-> (= Nat (add1 (+       m  n)) (+       m  (add1 n)))
+          (= Nat (add1 (+ (add1 m) n)) (+ (add1 m) (add1 n))))))
+(define step-add1+=+add1
+  (lambda (n m)
+    (lambda (casem)
+     (cong casem (+ 1)))))
+
+(claim add1+=+add1
+ (Pi ([n Nat] [m Nat])
+     (= Nat (add1 (+ m n)) (+ m (add1 n)))))
+(define add1+=+add1
+  (lambda (n m)
+    (ind-Nat m
+      (mot-add1+=+add1 n)
+      (base-add1+=+add1 n)
+      (step-add1+=+add1 n))))
+
+(claim mot-double=twice
+ (Pi ([n Nat]) U))
+(define mot-double=twice
+ (lambda (n) (= Nat (double n) (twice n))))
+
+;; easy to prove.  both definitions fall into their base case
+(claim base-double=twice
+ (= Nat (double 0) (twice 0)))
+(define base-double=twice
+ (same zero))
+
+(claim mot2
+  (-> Nat Nat U))
+(define mot2
+  (lambda (n k)
+    (= Nat (add1
+            (add1
+             (double n)))
+           (add1
+             k))))
+
+(claim step-double=twice
+ (Pi ([n Nat])
+     (-> (= Nat (double       n ) (twice       n ))
+         (= Nat (double (add1 n)) (twice (add1 n))))))
+(define step-double=twice
+  (lambda (n)
+    (lambda (pn) ;; our inductive hypothesis has type (= Nat (double n) (twice n))
+      (replace (add1+=+add1 n n) ;; our lemma, a (= Nat (add1 (+ n n)) (+ n (add1 n))
+        (mot2 n) ;; with (add1 (+ n n)) as argument, gives the base
+                 ;; with (+ n (add1 n)) as argument, gives the replace-expression value.
+        (cong pn (+ 2)))))) ;; the base
+
+(claim double=twice
+ (Pi ([n Nat])
+  (= Nat (double n) (twice n))))
+(define double=twice
+  (lambda (n)
+    (ind-Nat n
+             mot-double=twice
+             base-double=twice
+             step-double=twice)))
+
+(claim twice-Vec
+  (Pi ([E U] [n Nat])
+    (-> (Vec E n)
+        (Vec E (twice n)))))
+(define twice-Vec
+  (lambda (E n)
+    (lambda (vs)
+      (replace (double=twice n) ;; my lemma
+        (lambda (k) (Vec E k))
+        (double-Vec E n vs))))) ;; a thing of the FROM-type (Vec E (double n))
+                                ;; which becomes a TO-type  (Vec E (twice n))
+
+(twice-Vec Atom 3 colors)
