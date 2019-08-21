@@ -1,0 +1,139 @@
+#lang pie
+
+;; define the + function "(+ n m) increments 'm' n times" 
+(claim base-+
+ (-> Nat Nat))
+(define base-+
+ (lambda (m) m))
+
+(claim step-+
+ (-> Nat Nat))
+(define step-+
+ (lambda (j)
+   (add1 j)))
+
+(claim +
+ (-> Nat Nat Nat))
+(define +
+ (lambda (n m)
+  (iter-Nat n
+   (base-+ m)
+   step-+)))
+
+(claim double
+ (-> Nat Nat))
+(define double
+  (lambda (n) (+ n n)))
+
+(claim twice
+ (-> Nat Nat))
+(define twice
+  (lambda (n)
+    (iter-Nat n
+              zero
+              (+ 2))))
+
+;; (double 17)
+;; (twice 17)
+
+;; note that we are inducting over the second
+;; argument 'm'
+(claim mot-add1+=+add1
+ (-> Nat Nat U))
+(define mot-add1+=+add1
+ (lambda (n m)
+     (= Nat (add1 (+ m n)) (+ m (add1 n)))))
+
+(claim base-add1+=+add1
+  (Pi ([n Nat])
+    (= Nat (add1 (+ 0 n)) (+ 0 (add1 n)))))
+(define base-add1+=+add1
+  (lambda (n)
+    (same (add1 n))))
+
+(claim step-add1+=+add1
+  (Pi ([n Nat] [m Nat])
+      (-> (= Nat (add1 (+       m  n)) (+       m  (add1 n)))
+          (= Nat (add1 (+ (add1 m) n)) (+ (add1 m) (add1 n))))))
+(define step-add1+=+add1
+  (lambda (n m)
+    (lambda (casem)
+     (cong casem (+ 1)))))
+
+(claim add1+=+add1
+ (Pi ([n Nat] [m Nat])
+     (= Nat (add1 (+ m n)) (+ m (add1 n)))))
+(define add1+=+add1
+  (lambda (n m)
+    (ind-Nat m
+      (mot-add1+=+add1 n)
+      (base-add1+=+add1 n)
+      (step-add1+=+add1 n))))
+
+(claim mot-double=twice
+ (Pi ([n Nat]) U))
+(define mot-double=twice
+ (lambda (n) (= Nat (double n) (twice n))))
+
+;; easy to prove.  both definitions fall into their base case
+(claim base-double=twice
+ (= Nat (double 0) (twice 0)))
+(define base-double=twice
+ (same zero))
+
+;; by induction, we know this is true:
+;;
+;; pn:   (= Nat (double n) (twice n))
+;;
+;; step needs to return
+;;
+;; pn+1: (= Nat (add1 (+ n (add1 n))) (add1 (add1 (twice n))))
+;;
+;; Note that
+;;
+;; (cong pn (+ 2))
+;;
+;; is
+;;
+;;       (= Nat (add1 (add1 (+ n n))) (add1 (add1 (twice n)))
+;;
+;; These have the same TO's but their FROM's differ.
+;;
+;;
+;; (mot2 n) will be the motive our replace will want.  With (add1 (+ n n))
+;; as the argument it will give the (= ...) we have.  With (+ n (add1 n))
+;; as the argument, it will give the (= ...) we need.  And we have proven
+;; already ( "add1+=+add1 n n" ) that (add1 (+ n n)) = (+ n (add1 n)) as Nats.
+;;
+(claim mot2
+  (-> Nat Nat U))
+(define mot2
+  (lambda (n k)
+    (= Nat (add1
+            k)
+           (add1
+            (add1
+             (twice n))))))
+
+(claim step-double=twice
+ (Pi ([n Nat])
+     (-> (= Nat (double       n ) (twice       n ))
+         (= Nat (double (add1 n)) (twice (add1 n))))))
+(define step-double=twice
+  (lambda (n)
+    (lambda (pn) ;; our inductive hypothesis has type (= Nat (double n) (twice n))
+      (replace (add1+=+add1 n n) ;; our lemma, a (= Nat (add1 (+ n n)) (+ n (add1 n))
+        (mot2 n) ;; with (add1 (+ n n)) as argument, gives the base
+                 ;; with (+ n (add1 n)) as argument, gives the replace-expression value.
+        (cong pn (+ 2)))))) ;; the base
+
+(claim double=twice
+ (Pi ([n Nat])
+  (= Nat (double n) (twice n))))
+(define double=twice
+  (lambda (n)
+    (ind-Nat n
+             mot-double=twice
+             base-double=twice
+             step-double=twice)))
+
