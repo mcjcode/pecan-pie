@@ -1,13 +1,5 @@
 #lang pie
 
-;; define these functions for convenience, for cases
-;; where I would like to write a bare 'add1' but can't
-(claim func_add1 (-> Nat Nat))
-(define func_add1 (lambda (k) (add1 k)))
-
-(claim func_add2 (-> Nat Nat))
-(define func_add2 (lambda (k) (add1 (add1 k))))
-
 ;; define the + function "(+ n m) increments 'm' n times" 
 (claim base-+
  (-> Nat Nat))
@@ -17,7 +9,7 @@
 (claim step-+
  (-> Nat Nat))
 (define step-+
- func_add1)
+ (lambda (k) (add1 k)))
 
 (claim +
  (-> Nat Nat Nat))
@@ -38,10 +30,10 @@
   (lambda (n)
     (iter-Nat n
               zero
-              func_add2)))
+              (+ 2))))
 
-(double 17)
-(twice 17)
+;; (double 17)
+;; (twice 17)
 
 ;; note that we are inducting over the second
 ;; argument 'm'
@@ -65,7 +57,7 @@
 (define step-add1+=+add1
   (lambda (n m)
     (lambda (casem)
-     (cong casem func_add1))))
+     (cong casem (+ 1)))))
 
 (claim add1+=+add1
  (Pi ([n Nat] [m Nat])
@@ -89,8 +81,8 @@
  (same zero))
 
 ;; step needs to return a (= Nat (add1 (+ n (add1 n))) (add1 (add1 (twice n))))
-;;               same as  (cong (= Nat (+ n (add1 n)) (add1 (twice n))) func_add1)
-;;               same as  (cong (= Nat (add1 (+ n n)) (add1 (twice n))) func_add1)
+;;               same as  (cong (= Nat (+ n (add1 n)) (add1 (twice n))) (+ 1))
+;;               same as  (cong (= Nat (add1 (+ n n)) (add1 (twice n))) (+ 1))
 (claim step-double=twice
  (Pi ([n Nat])
      (-> (= Nat (double       n ) (twice       n ))
@@ -98,7 +90,7 @@
 (define step-double=twice
   (lambda (n)
     (lambda (almost) ;; this has type (= Nat (+ n n) (twice n))
-       (cong (trans (symm (add1+=+add1 n n)) (cong almost func_add1)) func_add1))))
+       (cong (trans (symm (add1+=+add1 n n)) (cong almost (+ 1))) (+ 1)))))
 
 (claim double=twice
  (Pi ([n Nat])
