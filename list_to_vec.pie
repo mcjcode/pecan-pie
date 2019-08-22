@@ -46,7 +46,7 @@
         (:: 4 nil)))))
   
 ;; let's try it out
-(list->vec Nat one-to-four)
+;; (list->vec Nat one-to-four)
 
 (claim length
   (Pi ([E U])
@@ -59,7 +59,7 @@
         (lambda (_ _ sofar) (add1 sofar)))))
 
 ;; let's try it out.
-(length Nat one-to-four)
+;; (length Nat one-to-four)
 
 ;; here is a better
 ;; list->vec.  Better because its type
@@ -89,4 +89,128 @@
         (the (Vec E 0) vecnil)        ;; the base
         (step-list->vec-better E))))) ;; the step
 
-(list->vec-better Nat one-to-four)
+;; Try it out.
+;; (list->vec-better Nat one-to-four)
+
+(claim mot-vec->list
+  (Pi ([E U] [k Nat])
+    (-> (Vec E k) U)))
+(define mot-vec->list
+  (lambda (E _)
+    (lambda (_)
+      (List E))))
+
+(claim base-vec->list
+  (Pi ([E U])
+    (List E)))
+(define base-vec->list
+  (lambda (E)
+    (the (List E) nil)))
+
+(claim step-vec->list
+  (Pi ([E U] [k Nat] [h E] [t (Vec E k)])
+    (-> (List E)
+        (List E))))
+(define step-vec->list
+  (lambda (E k h t)
+    (lambda (xs)
+      (:: h xs))))
+
+;; now let's do vec->list
+(claim vec->list
+  (Pi ([E U] [k Nat])
+    (-> (Vec E k)
+        (List E))))
+(define vec->list
+  (lambda (E k)
+    (lambda (vs)
+      (ind-Vec k vs
+        (mot-vec->list E)
+        (base-vec->list E)
+        (step-vec->list E)))))
+
+;; (vec->list Nat 4 (list->vec-better Nat one-to-four))
+
+;; let's show that list->vec doesn't just give
+;; us a vector of the same length as the list.
+;;
+;; Let's show that we haven't lost any information.
+;; that from the vec we can reconstruct the original
+;; list.
+
+(claim mot-list->vec->list=id
+  (Pi ([E U])
+    (-> (List E) U)))
+(define mot-list->vec->list=id
+  (lambda (E)
+    (lambda (es)
+      (= (List E) es (vec->list E (length E es)
+                                (list->vec-better E es))))))
+
+(claim base-list->vec->list=id
+  (Pi ([E U])
+    (= (List E) nil (vec->list E (length E nil)
+                                 (list->vec-better E nil)))))
+(define base-list->vec->list=id
+  (lambda (E)
+    (same (the (List E) nil))))
+
+;; These two seem the same:
+;;
+;; (list->vec-better E (:: hd tl)) = (vec:: hd (list->vec-better E tl))
+;;
+;; Is something like this be true:
+;;
+;; (Pi ([E U] [n Nat] [hd E] [tl (List E)])
+;;     (check-same (Vec E n) (list->vec-better E (:: hd tl)) (vec:: hd (list->vec-better E tl))))
+;;
+;; yes it is!
+(claim list->vec->list=id-lemma1
+  (Pi ([E U] [hd E] [tl (List E)])
+    (= (Vec E (add1 (length E tl))) (vec:: hd (list->vec-better E tl)) (list->vec-better E (:: hd tl)))))
+(define list->vec->list=id-lemma1
+  (lambda (E hd tl)
+    (same (list->vec-better E (:: hd tl)))))
+
+(claim cons-list
+  (Pi ([E U])
+    (-> E (List E)
+        (List E))))
+(define cons-list
+  (lambda (E)
+    (lambda (e es)
+      (:: e es))))
+ 
+(claim step-list->vec->list=id
+  (Pi ([E U] [hd E] [tl (List E)])
+    (-> (= (List E)        tl  (vec->list E       (length E tl)  (list->vec-better E        tl)))
+        (= (List E) (:: hd tl) (vec->list E (add1 (length E tl)) (list->vec-better E (:: hd tl)))))))
+(define step-list->vec->list=id
+ (lambda (E hd tl)
+   (lambda (tl-case)
+     (cong tl-case (cons-list E hd))))) ;; take our inductive hypothesis, and cons a 'hd' in front
+                                        ;;
+                                        ;; note, I didn't know this would work - i.e. I didn't know
+                                        ;; that this would be obvious to the interpreter and that I
+                                        ;; wouldn't have to string together a few clauses or apply an
+                                        ;; an induction.  In other words, this is intensionally true -
+                                        ;; "it follows from the definitions."
+
+(claim list->vec->list=id
+  (Pi ([E U] [es (List E)])
+   (= (List E) es (vec->list E (length E es)
+                   (list->vec-better E es)))))
+(define list->vec->list=id
+  (lambda (E)
+    (lambda (es)
+      (ind-List es
+        (mot-list->vec->list=id E)
+        (base-list->vec->list=id E)
+        (step-list->vec->list=id E)))))
+
+;; have we eliminated all possibility of foolishness?
+;;
+;; I suppose not.  We're trusting that vec->list and
+;; list->vec-better aren't conspiring against us.  Both
+;; could be reversing the order of elements (or some
+;; pair of inverse permutations).
