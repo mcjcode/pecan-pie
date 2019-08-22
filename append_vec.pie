@@ -1,0 +1,82 @@
+#lang pie
+
+;; define the + function "(+ n m) increments 'm' n times" 
+(claim base-+
+ (-> Nat Nat))
+(define base-+
+ (lambda (m) m))
+
+(claim step-+
+ (-> Nat Nat))
+(define step-+
+ (lambda (k) (add1 k)))
+
+(claim +
+ (-> Nat Nat Nat))
+(define +
+ (lambda (n m)
+  (iter-Nat n
+   (base-+ m)
+   step-+)))
+
+;; building append-vec for concatenating
+;; two Vec's together.  We are inducting
+;; over the length 'j' vector, while the
+;; length 'k' vector is the base case.
+(claim mot-append-vec
+  (Pi ([E U] [k Nat] [j Nat])
+    (-> (Vec E j) U)))
+(define mot-append-vec
+  (lambda (E k j)
+    (lambda (_) (Vec E (+ j k))))) ;; ignore the Vec argument
+
+(claim base-append-vec
+  (Pi ([E U] [k Nat])
+    (-> (Vec E k) 
+        (mot-append-vec E k zero vecnil))))
+(define base-append-vec
+  (lambda (E k)
+    (lambda (ws) ws)))
+
+(claim step-append-vec
+  (Pi ([E U] [k Nat] [j Nat] [h E] [t (Vec E j)])
+    (-> (mot-append-vec E k j t)
+        (mot-append-vec E k (add1 j) (vec:: h t)))))
+(define step-append-vec
+  (lambda (E k j h t)
+    (lambda (sofar)
+      (vec:: h sofar))))
+
+(claim append-vec
+  (Pi ([E U] [j Nat] [k Nat])
+    (-> (Vec E j)
+        (Vec E k)
+        (Vec E (+ j k)))))
+(define append-vec
+  (lambda (E j k vs ws)
+    (ind-Vec j vs
+      (mot-append-vec E k)     ;; the mot
+      (base-append-vec E k ws) ;; the base
+      (step-append-vec E k)))) ;; the step
+
+
+(claim drinks
+  (Vec Atom 2))
+(define drinks
+  (vec:: 'coffee
+    (vec:: 'cocoa vecnil)))
+
+(claim treats
+  (Vec Atom 3))
+(define treats
+  (vec:: 'kanelbullar
+    (vec:: 'plattar
+      (vec:: 'prinsesstarta vecnil))))
+
+(claim fika
+  (Vec Atom 5))
+(define fika
+  (append-vec Atom 2 3 drinks treats))
+
+;; print the result:
+fika
