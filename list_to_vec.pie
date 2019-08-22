@@ -1,0 +1,92 @@
+#lang pie
+
+;; Here we define  (list->vec E) which takes
+;; lists and turns them into ( n (Vec E n) ) pairs.
+;;
+;; (claim list->vec
+;;   (Pi ([E U])
+;;     (-> (List E)
+;;         (Sigma ([n Nat])
+;;                (Vec E n)))))
+
+(claim base-list->vec
+  (Pi ([E U])
+    (Sigma ([n Nat]) (Vec E n))))
+(define base-list->vec
+  (lambda (E)
+    (cons 0 vecnil)))
+
+(claim step-list->vec
+  (Pi ([E U])
+    (-> E (List E) (Sigma ([n Nat]) (Vec E n))     ;; note how the last arg
+                   (Sigma ([n Nat]) (Vec E n)) ))) ;; and the result have the same type.
+(define step-list->vec
+  (lambda (E)
+    (lambda (e es almost)
+      (cons (add1 (car almost))
+            (vec:: e (cdr almost))))))
+
+(claim list->vec
+  (Pi ([E U])
+    (-> (List E)
+        (Sigma ([n Nat])
+               (Vec E n)))))
+(define list->vec
+  (lambda (E)
+    (lambda (es)
+      (rec-List es
+        (base-list->vec E)
+        (step-list->vec E)))))
+
+(claim one-to-four (List Nat))
+(define one-to-four
+  (:: 1
+    (:: 2
+      (:: 3
+        (:: 4 nil)))))
+  
+;; let's try it out
+(list->vec Nat one-to-four)
+
+(claim length
+  (Pi ([E U])
+    (-> (List E)
+        Nat)))
+(define length
+  (lambda (E es)
+      (rec-List es
+        zero
+        (lambda (_ _ sofar) (add1 sofar)))))
+
+;; let's try it out.
+(length Nat one-to-four)
+
+;; here is a better
+;; list->vec.  Better because its type
+;; guarantees that the resulting Vec
+;; has the same length as the passed in
+;; list.  We have baked the length of the
+;; list into to type of the expression.
+;;
+(claim step-list->vec-better
+  (Pi ([E U] [e E] [es (List E)])
+    (-> (Vec E (length E es))
+        (Vec E (add1 (length E es))))))
+(define step-list->vec-better
+  (lambda (E e es)
+    (lambda (sofar)
+      (vec:: e sofar))))
+
+(claim list->vec-better
+  (Pi ([E U])
+    (Pi ([es (List E)])
+      (Vec E (length E es)))))
+(define list->vec-better
+  (lambda (E)
+    (lambda (es)
+      (ind-List es
+        (lambda (ess) (Vec E (length E ess)))
+        (the (Vec E 0) vecnil)        ;; the base
+        (step-list->vec-better E))))) ;; the step
+
+(list->vec-better Nat one-to-four)
