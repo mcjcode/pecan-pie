@@ -1,0 +1,91 @@
+#lang pie
+
+(claim double
+ (-> Nat Nat))
+(define double
+  (lambda (n)
+    (iter-Nat n
+      zero
+      (lambda (k) (add1 (add1 k))))))
+
+(claim even
+  (-> Nat U))
+(define even
+  (lambda (n)
+    (Sigma ([k Nat])
+      (= Nat n (double k)))))
+
+(claim zero-is-even
+  (even zero))
+(define zero-is-even
+  (cons zero (same zero)))
+
+(claim two-is-even
+  (even 2))
+(define two-is-even
+  (cons 1 (same 2)))
+
+(claim add2
+ (-> Nat Nat))
+(define add2
+ (lambda (n)
+   (add1
+    (add1 n))))
+
+(claim add2even
+  (Pi ([n Nat])
+    (-> (even n) (even (add2 n)))))
+
+;; if there is a k s.t. n   = double k,
+;; then naturally,      n+2 = double (k+1) 
+(define add2even
+  (lambda (n)
+    (lambda (n-is-even) ;; we have that (Sigma ([k Nat]) (= Nat n (double k))
+                   ;; we need that (Sigma ([k Nat]) (= Nat (+ 2 n) (double k))
+                   ;;
+                   ;; need to extract the guaranteed k from the inductive hypothesis 
+                   ;; that's what 'car' is for!
+      (cons (add1 (car n-is-even))
+;;      (same (add1 (add1 n)))))))  ;; note that this doesn't work
+        (cong (cdr n-is-even) add2)))))
+
+
+(claim odd
+  (-> Nat U))
+(define odd
+  (lambda (n)
+    (Sigma ([k Nat])
+      (= Nat n (add1 (double k))))))
+
+(claim fadd1
+  (-> Nat Nat))
+(define fadd1
+  (lambda (n)
+    (add1 n)))
+
+(claim even+1-is-odd
+  (Pi ([n Nat])
+    (-> (even n)
+      (odd (add1 n)))))
+(define even+1-is-odd
+  (lambda (n)
+    (lambda (n-is-even) ;; we have that (Sigma ([k Nat]) (= Nat n (double k))
+                   ;;
+                   ;; in short, if k is the k that exists to show n even
+                   ;; then k is also the k that exists to show (add1 n) odd.
+                   ;;
+                   ;; want that (Sigma ([k Nat]) (= Nat (add1 n) (add1 (double k))))
+      (cons (car n-is-even)
+            (cong (cdr n-is-even) fadd1)))))
+
+(claim odd+1-is-even
+  (Pi ([n Nat])
+    (-> (odd n)
+      (even (add1 n)))))
+(define odd+1-is-even
+  (lambda (n)
+    (lambda (n-is-odd) ;; we know (Sigma ([k Nat]) (= Nat n (add1 (double k)))
+      (cons (add1 (car n-is-odd)) ;; if n = 2*k+1 then n+1 = 2*(k+1)
+            (cong (cdr n-is-odd) fadd1))))) ;; again, happy we're using double
+                                            ;; and not twice.
+
