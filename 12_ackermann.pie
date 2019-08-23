@@ -1,0 +1,43 @@
+#lang pie
+
+;; https://en.wikipedia.org/wiki/Ackermann_function
+;;
+;; A(m,n) = n+1              m = 0
+;;          A(m-1,1)         m > 0, n = 0
+;;          A(m-1,A(m,n-1))  otherwise
+
+(claim base-ackermann 
+  (-> Nat Nat))
+(define base-ackermann
+  (lambda (n) (add1 n))) ;; A_0(n) = n+1
+
+(claim step-ackermann
+  (-> Nat (-> Nat Nat)
+      (-> Nat Nat)))
+(define step-ackermann
+  (lambda (m)
+    (lambda (f)
+      (lambda (n)
+        (iter-Nat n
+          (f 1)
+          f)))))
+
+(claim ackermann
+  (-> Nat Nat
+      Nat))
+;;
+;; we'll induct on m, returning a
+;; function of n in each case
+;;
+(define ackermann
+  (lambda (m)
+    (rec-Nat m       ;; the target
+      base-ackermann
+      step-ackermann)))
+
+(:: (ackermann 3 0)
+  (:: (ackermann 3 1)
+    (:: (ackermann 3 2)
+      (:: (ackermann 3 3)
+        (:: (ackermann 3 4) nil)))))
+
