@@ -1,4 +1,3 @@
-#lang pie
 
 ;; here we will prove that any Nat
 ;; is either Even or Odd.

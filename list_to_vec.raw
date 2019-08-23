@@ -1,4 +1,3 @@
-#lang pie
 
 ;; Here we define  (list->vec E) which takes
 ;; lists and turns them into ( n (Vec E n) ) pairs.

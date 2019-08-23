@@ -1,5 +1,3 @@
-#lang pie
-
 ; Is the Nat a donut (zero) or not?
 
 (claim qdonut

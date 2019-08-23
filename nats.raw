@@ -1,4 +1,3 @@
-#lang pie
 
 ;; addition operator for Nat's
 

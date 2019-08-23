@@ -1,5 +1,3 @@
-#lang pie
-
 (claim vegetables
  (Pair Atom Atom))
 

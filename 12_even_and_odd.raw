@@ -1,4 +1,3 @@
-#lang pie
 
 (claim double
  (-> Nat Nat))
