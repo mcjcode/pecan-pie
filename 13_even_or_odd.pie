@@ -1,0 +1,102 @@
+#lang pie
+
+;; here we will prove that any Nat
+;; is either Even or Odd.
+;;
+;; Note that we capitalized Even
+;; and Odd because these functions
+;; return types.
+
+(claim double
+ (-> Nat Nat))
+(define double
+  (lambda (n)
+    (iter-Nat n
+      zero
+      (lambda (k) (add1 (add1 k))))))
+
+(claim Even
+  (-> Nat U))
+(define Even
+  (lambda (n)
+    (Sigma ([k Nat])
+      (= Nat n (double k)))))
+
+(claim Odd
+  (-> Nat U))
+(define Odd
+  (lambda (n)
+    (Sigma ([k Nat])
+      (= Nat n (add1 (double k))))))
+
+(claim fadd1
+  (-> Nat Nat))
+(define fadd1
+  (lambda (n)
+    (add1 n)))
+
+(claim even+1-is-odd
+  (Pi ([n Nat])
+    (-> (Even n)
+      (Odd (add1 n)))))
+(define even+1-is-odd
+  (lambda (n)
+    (lambda (n-is-even) ;; we have that (Sigma ([k Nat]) (= Nat n (double k))
+                   ;;
+                   ;; in short, if k is the k that exists to show n even
+                   ;; then k is also the k that exists to show (add1 n) odd.
+                   ;;
+                   ;; want that (Sigma ([k Nat]) (= Nat (add1 n) (add1 (double k))))
+      (cons (car n-is-even)
+            (cong (cdr n-is-even) fadd1)))))
+
+(claim odd+1-is-even
+  (Pi ([n Nat])
+    (-> (Odd n)
+      (Even (add1 n)))))
+(define odd+1-is-even
+  (lambda (n)
+    (lambda (n-is-odd) ;; we know (Sigma ([k Nat]) (= Nat n (add1 (double k)))
+      (cons (add1 (car n-is-odd)) ;; if n = 2*k+1 then n+1 = 2*(k+1)
+            (cong (cdr n-is-odd) fadd1))))) ;; again, happy we're using double
+                                            ;; and not twice.
+
+;; Now we prove that all Nat's are either
+;; Even or Odd.
+(claim mot-either-all-nats-are-even-or-odd
+  (Pi ([n Nat])
+    (->(Either (Even n) (Odd n))
+       U)))
+(define mot-either-all-nats-are-even-or-odd
+  (lambda (n)
+    (lambda (_)
+      (Either (Even (add1 n)) (Odd (add1 n))))))
+
+;; We need a base case for our induction
+(claim zero-is-even-or-odd ;; in fact, it's even
+  (Either (Even zero) (Odd zero)))
+(define zero-is-even-or-odd
+  (left (cons zero (same zero))))
+
+(claim step-all-nats-are-even-or-odd
+  (Pi ([n Nat])
+    (-> (Either (Even       n ) (Odd       n))
+        (Either (Even (add1 n)) (Odd (add1 n))))))
+(define step-all-nats-are-even-or-odd
+  (lambda (n)
+    (lambda (casen)
+      (ind-Either casen
+         (mot-either-all-nats-are-even-or-odd n)
+         (lambda (lt) (right (even+1-is-odd n lt))) ;; n is even, show that (n+1) is odd
+         (lambda (rt) (left  (odd+1-is-even n rt)))))))
+
+;; here is our claim.
+(claim all-nats-are-even-or-odd
+  (Pi ([n Nat])
+    (Either (Even n) (Odd n))))
+(define all-nats-are-even-or-odd
+  (lambda (n)
+    (ind-Nat n
+       (lambda (k) (Either (Even k) (Odd k)))    ;; the mot
+       zero-is-even-or-odd                  ;; the base
+       step-all-nats-are-even-or-odd)))     ;; the step
