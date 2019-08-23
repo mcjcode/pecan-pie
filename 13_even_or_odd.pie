@@ -100,3 +100,13 @@
        (lambda (k) (Either (Even k) (Odd k)))    ;; the mot
        zero-is-even-or-odd                  ;; the base
        step-all-nats-are-even-or-odd)))     ;; the step
+
+(all-nats-are-even-or-odd 17)
+
+;; observe that the normal form of this expression is
+;; the (Either (Even 17) (Odd 17))
+;;
+;; (right (cons 8 (same 17)))
+;;
+;; So 17 is odd (it's under the right constructor)
+;; and 17 = 2*8+1 (our proof that 17 is odd)
