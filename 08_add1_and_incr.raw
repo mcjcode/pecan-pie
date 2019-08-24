@@ -1,0 +1,62 @@
+;; include nats.raw to get the definition of +
+@(include "nats.raw")
+
+;; define the incr function
+(claim incr
+ (-> Nat Nat))
+(define incr
+ (lambda (n)
+  (iter-Nat n
+   1
+   step-+)))
+
+;; note that (+ 1) and incr do very different
+;; things, and have different values, but always
+;; give the same answer.
+
+;; Here are three instances where
+;; we have equality.
+;; (the (= Nat (+ 1 0) (incr 0)) (same 1))
+;; (the (= Nat (+ 1 1) (incr 1)) (same 2))
+;; (the (= Nat (+ 1 2) (incr 2)) (same 3))
+;;
+
+;; Now let's prove that (+ 1 n) *equals* (incr n) (as Nat's)
+
+;; Note how the motive can't just be a (-> Nat ...)
+;; because the ... *depends* on which Nat was passed in.
+;;
+(claim mot-add1=incr
+       (Pi ((n Nat))
+           U))
+(define mot-add1=incr
+       (lambda (n)
+         (= Nat (+ 1 n) (incr n))))
+
+(claim base-add1=incr
+  (= Nat (+ 1 zero) (incr zero)))
+(define base-add1=incr
+  (same (add1 zero)))
+
+(claim step-add1=incr
+       (Pi ((n Nat))
+           (-> (= Nat (+ 1        n ) (incr       n) )
+               (= Nat (+ 1  (add1 n)) (incr (add1 n))))))
+;;             (= Nat (add1 (add1 n)) (add1 (incr n)))))) - the *same* type as the last line
+(define step-add1=incr
+  (lambda (_) ;; (n) note how we can use _ to 'dim' an argument
+    (lambda (n-1case)   ;; takes a proof of the n-1 case
+      (cong n-1case (the (-> Nat Nat) (lambda (n) (add1 n)))))))
+
+;; putting this together, here is our claim
+;; that (+ 1) and incr always give the same answer.
+(claim add1=incr
+ (Pi ((n Nat))
+  (= Nat (+ 1 n) (incr n))))
+;; and here is our proof:
+(define add1=incr
+   (lambda (n)
+     (ind-Nat n
+              mot-add1=incr
+              base-add1=incr
+              step-add1=incr)))

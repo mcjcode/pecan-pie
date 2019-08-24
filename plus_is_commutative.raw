@@ -1,72 +1,4 @@
-;; define these functions for convenience, for cases
-;; where I would like to write a bare 'add1' but can't
-(claim func_add1 (-> Nat Nat))
-(define func_add1 (lambda (k) (add1 k)))
-
-(claim func_add2 (-> Nat Nat))
-(define func_add2 (lambda (k) (add1 (add1 k))))
-
 @(include "nats.raw")  ;; get the definition of +
-
-;; define the incr function
-(claim incr
- (-> Nat Nat))
-(define incr
- (lambda (n)
-  (iter-Nat n
-   1
-   step-+)))
-
-;; note that (+ 1) and incr do very different
-;; things, and have different values, but always
-;; give the same answer.
-
-;; Here are three instances where
-;; we have equality.
-;; (the (= Nat (+ 1 0) (incr 0)) (same 1))
-;; (the (= Nat (+ 1 1) (incr 1)) (same 2))
-;; (the (= Nat (+ 1 2) (incr 2)) (same 3))
-;;
-
-;; Now let's prove that (+ 1 n) *equals* (incr n) (as Nat's)
-
-;; Note how the motive can't just be a (-> Nat ...)
-;; because the ... *depends* on which Nat was passed in.
-;;
-(claim mot-add1=incr
-       (Pi ((n Nat))
-           U))
-(define mot-add1=incr
-       (lambda (n)
-         (= Nat (+ 1 n) (incr n))))
-
-(claim base-add1=incr
-  (= Nat (+ 1 zero) (incr zero)))
-(define base-add1=incr
-  (same (add1 zero)))
-
-(claim step-add1=incr
-       (Pi ((n Nat))
-           (-> (= Nat (+ 1        n ) (incr       n) )
-               (= Nat (+ 1  (add1 n)) (incr (add1 n))))))
-;;             (= Nat (add1 (add1 n)) (add1 (incr n)))))) - the *same* type as the last line
-(define step-add1=incr
-  (lambda (_) ;; (n) note how we can use _ to 'dim' an argument
-    (lambda (n-1case)   ;; takes a proof of the n-1 case
-      (cong n-1case (the (-> Nat Nat) (lambda (n) (add1 n)))))))
-
-;; putting this together, here is our claim
-;; that (+ 1) and incr always give the same answer.
-(claim add1=incr
- (Pi ((n Nat))
-  (= Nat (+ 1 n) (incr n))))
-;; and here is our proof:
-(define add1=incr
-   (lambda (n)
-     (ind-Nat n
-              mot-add1=incr
-              base-add1=incr
-              step-add1=incr)))
 
 ;; Now let's prove that + is commutative
 ;; i.e. that (+ n m) *equals* (+ m n)
@@ -146,13 +78,13 @@
                           ;; Note how our evidence lines up out here ------------------|
                (trans (the (= Nat (+ (add1 m-1) (add1 n-1)) (add1 (+ m-1 (add1 n-1)))) (same (+ (add1 m-1) (add1 n-1)))) ;; step 1
                       (the (= Nat (add1 (+ m-1 (add1 n-1))) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (+ m-1 (add1 n-1))) (add1 (+ (add1 n-1) m-1))) (cong casem-1 func_add1)) ;; step 2
+               (trans (the (= Nat (add1 (+ m-1 (add1 n-1))) (add1 (+ (add1 n-1) m-1))) (cong casem-1 (+ 1))) ;; step 2
                       (the (= Nat (add1 (+ (add1 n-1) m-1)) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (add1 (+ n-1 m-1))) (add1 (add1 (+ m-1 n-1)))) (symm (cong (casen-1 m-1) func_add2))) ;; step 3
+               (trans (the (= Nat (add1 (add1 (+ n-1 m-1))) (add1 (add1 (+ m-1 n-1)))) (symm (cong (casen-1 m-1) (+ 2)))) ;; step 3
                       (the (= Nat (add1 (add1 (+ m-1 n-1))) (+ (add1 n-1) (add1 m-1)))
                (trans (the (= Nat (add1 (add1 (+ m-1 n-1))) (add1 (+ (add1 m-1) n-1))) (same (add1 (add1 (+ m-1 n-1))))) ;; step 4
                       (the (= Nat (add1 (+ (add1 m-1) n-1)) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (+ (add1 m-1) n-1)) (add1 (+ n-1 (add1 m-1)))) (cong (casen-1 (add1 m-1)) func_add1)) ;; step 5
+               (trans (the (= Nat (add1 (+ (add1 m-1) n-1)) (add1 (+ n-1 (add1 m-1)))) (cong (casen-1 (add1 m-1)) (+ 1))) ;; step 5
                       (the (= Nat (add1 (+ n-1 (add1 m-1))) (+ (add1 n-1) (add1 m-1))) (same (add1 (+ n-1 (add1 m-1)))) ;; step 6
                            )))))))))))))))))
 
@@ -167,4 +99,46 @@
      base-plus-is-commutative
      step-plus-is-commutative)))
 
-;; plus-is-commutative
+(claim plus-has-an-additive-identity
+  (Sigma ([zro Nat])
+    (Pi ([n Nat])
+      (= Nat (+ zro n) n))))
+(define plus-has-an-additive-identity
+  (cons zero
+    (lambda (n) (same n))))
+
+(claim mot-plus-is-associative
+  (Pi ([b Nat] [c Nat] [a Nat])
+    U))
+(define mot-plus-is-associative
+  (lambda (b c)
+    (lambda (a) (= Nat (+ (+ a b) c) (+ a (+ b c))))))
+
+(claim base-plus-is-associative
+  (Pi ([b Nat] [c Nat])
+    (= Nat (+ (+ zero b) c) (+ zero (+ b c)))))
+(define base-plus-is-associative
+  (lambda (b c)
+    (same (+ b c))))
+
+(claim step-plus-is-associative
+  (Pi ([b Nat] [c Nat] [a Nat])
+    (-> (= Nat (+ (+       a  b) c) (+       a  (+ b c)))
+        (= Nat (+ (+ (add1 a) b) c) (+ (add1 a) (+ b c))))))
+(define step-plus-is-associative
+  (lambda (b c)
+    (lambda (a)
+      (lambda (casea)
+        (cong casea (+ 1)))))) ;; honestly, I just guessed
+
+(claim plus-is-associative
+  (Pi ([a Nat] [b Nat] [c Nat])
+    (= Nat (+ (+ a b) c) (+ a (+ b c)))))
+(define plus-is-associative
+  (lambda (a b)
+    (lambda (c)
+      (ind-Nat a ;; we induct on the first variable (becase the base is easy)
+        (mot-plus-is-associative b c)
+        (base-plus-is-associative b c)
+        (step-plus-is-associative b c)))))
+        
