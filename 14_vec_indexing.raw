@@ -1,0 +1,65 @@
+@(include "14_maybe_and_finite.raw")
+
+;; lets try using our new 'Fin n' types
+;; as indexes for like sized vectors
+
+(claim mot-vec-index
+  (Pi ([E U] [n Nat])
+    U))
+(define mot-vec-index
+  (lambda (E)
+    (lambda (n)
+      (-> (Vec E n) (Fin n) E))))
+
+(claim base-vec-index
+  (Pi ([E U])
+    (-> (Vec E zero) (Fin zero) E)))
+(define base-vec-index
+  (lambda (E)
+    (lambda (vz fz)
+      (ind-Absurd fz E))))
+
+(claim step-vec-index
+  (Pi ([E U] [n Nat])
+    (-> (-> (Vec E       n ) (Fin       n ) E)
+        (-> (Vec E (add1 n)) (Fin (add1 n)) E))))
+(define step-vec-index
+  (lambda (E n)
+    (lambda (casen)
+      (lambda (vec idx)
+        (ind-Either idx
+          (lambda (_) E)
+          (lambda (lft) (head vec)) ;; if idx is a left
+          (lambda (rgt) (casen (tail vec) rgt)))))))
+
+(claim vec-index
+  (Pi ([E U] [n Nat])
+    (-> (Vec E n) (Fin n) E)))
+(define vec-index
+  (lambda (E n)
+    (ind-Nat n
+      (mot-vec-index E)
+      (base-vec-index E)
+      (step-vec-index E))))
+
+(claim hungarian-count-to-ten
+  (Vec Atom 11))
+(define hungarian-count-to-ten
+  (vec:: 'nulla
+    (vec:: 'egy
+      (vec:: 'kettö
+        (vec:: 'három
+          (vec:: 'négy
+            (vec:: 'öt
+              (vec:: 'hat
+                (vec:: 'hét
+                  (vec:: 'nyolc
+                    (vec:: 'kilenc
+                      (vec:: 'tíz vecnil))))))))))))
+
+(claim position-three-of-eleven
+  (Fin 11))
+(define position-three-of-eleven
+  (right (right (right (left sole)))))
+
+(vec-index Atom 11 hungarian-count-to-ten position-three-of-eleven)
