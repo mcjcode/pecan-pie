@@ -1,5 +1,50 @@
 @(include "nats.raw")  ;; get the definition of +
 
+;; we'll need this lemma later define the
+;; incr function.  see 08_add1_and_incr.raw
+;; for details.
+(claim incr
+  (-> Nat Nat))
+(define incr
+  (lambda (n)
+    (iter-Nat n
+      1
+      step-+)))
+
+(claim mot-add1=incr
+  (Pi ((n Nat))
+    U))
+(define mot-add1=incr
+  (lambda (n)
+    (= Nat (+ 1 n) (incr n))))
+
+(claim base-add1=incr
+  (= Nat (+ 1 zero) (incr zero)))
+(define base-add1=incr
+  (same (add1 zero)))
+
+(claim step-add1=incr
+  (Pi ((n Nat))
+    (-> (= Nat (+ 1        n ) (incr       n) )
+        (= Nat (+ 1  (add1 n)) (incr (add1 n))))))
+(define step-add1=incr
+  (lambda (_)
+    (lambda (n-1case)
+      (cong n-1case (the (-> Nat Nat) (lambda (n) (add1 n)))))))
+
+;; (+ 1 n) = (+ n 1)
+(claim add1=incr
+ (Pi ((n Nat))
+  (= Nat (+ 1 n) (incr n))))
+;; and here is our proof:
+(define add1=incr
+   (lambda (n)
+     (ind-Nat n
+              mot-add1=incr
+              base-add1=incr
+              step-add1=incr)))
+
+
 ;; Now let's prove that + is commutative
 ;; i.e. that (+ n m) *equals* (+ m n)
 ;;
@@ -66,8 +111,8 @@
                                                          ;;                           (+ (add1 n-1) 0))
                                                          ;; "0 commutes with (add1 n-1)"
            (lambda (m-1)
-             (lambda (casem-1) ;; casem-1 is a (= Nat (+ m-1 (add1 n-1))
-                          ;;                     (+ (add1 n-1) m-1))
+             (lambda (casem-1) ;; casem-1 is a     (= Nat (+       m-1  (add1 n-1)) (+ (add1 n-1)       m-1))
+                          ;;
                           ;; "m-1 commutes with (add1 n-1)" (2)
                           ;;
                           ;; we must return a (= Nat (+ (add1 m-1) (add1 n-1)) (+ (add1 n-1) (add1 m-1)))
@@ -76,17 +121,14 @@
                           ;;
                           ;; Now we push symbols around in the only way we can.
                           ;; Note how our evidence lines up out here ------------------|
-               (trans (the (= Nat (+ (add1 m-1) (add1 n-1)) (add1 (+ m-1 (add1 n-1)))) (same (+ (add1 m-1) (add1 n-1)))) ;; step 1
-                      (the (= Nat (add1 (+ m-1 (add1 n-1))) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (+ m-1 (add1 n-1))) (add1 (+ (add1 n-1) m-1))) (cong casem-1 (+ 1))) ;; step 2
-                      (the (= Nat (add1 (+ (add1 n-1) m-1)) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (add1 (+ n-1 m-1))) (add1 (add1 (+ m-1 n-1)))) (symm (cong (casen-1 m-1) (+ 2)))) ;; step 3
-                      (the (= Nat (add1 (add1 (+ m-1 n-1))) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (add1 (+ m-1 n-1))) (add1 (+ (add1 m-1) n-1))) (same (add1 (add1 (+ m-1 n-1))))) ;; step 4
-                      (the (= Nat (add1 (+ (add1 m-1) n-1)) (+ (add1 n-1) (add1 m-1)))
-               (trans (the (= Nat (add1 (+ (add1 m-1) n-1)) (add1 (+ n-1 (add1 m-1)))) (cong (casen-1 (add1 m-1)) (+ 1))) ;; step 5
-                      (the (= Nat (add1 (+ n-1 (add1 m-1))) (+ (add1 n-1) (add1 m-1))) (same (add1 (+ n-1 (add1 m-1)))) ;; step 6
-                           )))))))))))))))))
+                (trans (the (= Nat (+ (add1 m-1) (add1 n-1)) (add1 (+ m-1 (add1 n-1)))) (same (+ (add1 m-1) (add1 n-1))) ) 
+                (trans (the (= Nat (add1 (+ m-1 (add1 n-1))) (add1 (+ (add1 n-1) m-1))) (cong casem-1 (+ 1))             ) 
+                (trans (the (= Nat (add1 (+ (add1 n-1) m-1)) (add1 (add1 (+ n-1 m-1)))) (same (+ (add1 n-1) m-1))        )
+                (trans (the (= Nat (add1 (add1 (+ n-1 m-1))) (add1 (add1 (+ m-1 n-1)))) (symm (cong (casen-1 m-1) (+ 2)))) 
+                (trans (the (= Nat (add1 (add1 (+ m-1 n-1))) (add1 (+ (add1 m-1) n-1))) (same (add1 (add1 (+ m-1 n-1)))) ) 
+                (trans (the (= Nat (add1 (+ (add1 m-1) n-1)) (add1 (+ n-1 (add1 m-1)))) (cong (casen-1 (add1 m-1)) (+ 1))) 
+                       (the (= Nat (add1 (+ n-1 (add1 m-1))) (+ (add1 n-1) (add1 m-1))) (same (add1 (+ n-1 (add1 m-1)))  ) 
+                           )))))))))))))
 
 
 (claim plus-is-commutative
@@ -135,10 +177,101 @@
   (Pi ([a Nat] [b Nat] [c Nat])
     (= Nat (+ (+ a b) c) (+ a (+ b c)))))
 (define plus-is-associative
-  (lambda (a b)
-    (lambda (c)
+  (lambda (a b c)
       (ind-Nat a ;; we induct on the first variable (becase the base is easy)
         (mot-plus-is-associative b c)
         (base-plus-is-associative b c)
-        (step-plus-is-associative b c)))))
-        
+        (step-plus-is-associative b c))))
+
+(claim mot-distributivity
+  (Pi ([b Nat] [c Nat] [a Nat])
+    U))
+(define mot-distributivity
+  (lambda (b c a)
+    (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))
+
+(claim base-distributivity
+  (Pi ([b Nat] [c Nat])
+    (= Nat (* (+ zero b) c) (+ (* zero c) (* b c)))))
+(define base-distributivity
+  (lambda (b c)
+    (same (* b c))))
+
+(claim step-distributivity
+  (Pi ([b Nat] [c Nat] [a Nat])
+    (-> (= Nat (* (+       a  b) c) (+ (*       a  c) (* b c)))
+        (= Nat (* (+ (add1 a) b) c) (+ (* (add1 a) c) (* b c))))))
+        ;; ((1+a)+b)*c = ((a+1)+b)*c          commutativity of addition
+        ;;             = (a+(1+b))*c          assoc of addition
+        ;;             = a*c + (1+b)*c        inductive hypothesis
+        ;;             = a*c + (c+(b*c))      def'n of multiplication
+        ;;             = (a*c + c) + b*c      associativity of addition
+        ;;             = (c + a*c) + b*c      commutativity of addition
+        ;;             = ((1+a)*c) + b*c      definition 
+(define step-distributivity
+  (lambda (b c)
+    (lambda (a)
+      (lambda (casea)
+        TODO))))
+
+(claim distributivity
+  (Pi ([a Nat] [b Nat] [c Nat])
+    (= Nat (* (+ a b) c) (+ (* a c) (* b c))))) ;; (a+b)*c = (a*c)+(b*c)
+(define distributivity
+  (lambda (a b c)
+    (ind-Nat a
+      (mot-distributivity b c)
+      (base-distributivity b c)
+      TODO))) ;;(step-distributivity b c))))
+
+(claim mult-has-an-identity
+  (Sigma ([one Nat])
+    (Pi ([n Nat])
+      (= Nat (* one n) n))))
+(define mult-has-an-identity
+  (cons (add1 zero)
+    (lambda (n)
+      (same n))))
+
+(claim mot-mult-is-associative
+  (Pi ([b Nat] [c Nat] [a Nat])
+    U))
+(define mot-mult-is-associative
+  (lambda (b c)
+    (lambda (a) (= Nat (* (* a b) c) (* a (* b c))))))
+
+(claim base-mult-is-associative
+  (Pi ([b Nat] [c Nat])
+    (= Nat (* (* zero b) c) (* zero (* b c)))))
+(define base-mult-is-associative
+  (lambda (b c)
+    (same zero)))
+
+(claim step-mult-is-associative
+  (Pi ([b Nat] [c Nat] [a Nat])
+    (-> (= Nat (* (*       a  b) c) (*       a  (* b c)))
+        (= Nat (* (* (add1 a) b) c) (* (add1 a) (* b c))))))
+(define step-mult-is-associative
+  (lambda (b c)
+    (lambda (a)
+      (lambda (casea)
+        TODO)))) ;; know (a*b)*c = a*(b*c)
+                 ;; want to show ((a+1)*b)*c = (a+1)*(b*c)
+                 ;;
+                 ;;              ((a+1)*b)*c = (a*b+1*b)*c       'distributivity a 1 b'
+                 ;;                          = (a*b)*c+(1*b)*c   'distributivity  (a*b) (1*b) c'
+                 ;;                          = a*(b*c)+(1*b)*c   'commutativity of mult'
+                 ;;                          = a*(b*c)+(b*c)     '1*b=b'
+                 ;;                          = a*(b*c)+1*(b*c)   '(b*c)=1*(b*c)'
+                 ;;                          = (a+1)*(b*c)       'distributivity a 1 (b*c)'
+
+(claim mult-is-associative
+  (Pi ([a Nat] [b Nat] [c Nat])
+    (= Nat (* (* a b) c) (* a (* b c)))))
+(define mult-is-associative
+  (lambda (a b c)
+      (ind-Nat a
+        (mot-mult-is-associative b c)
+        (base-mult-is-associative b c)
+        (step-mult-is-associative b c))))
+
