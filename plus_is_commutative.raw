@@ -1,50 +1,5 @@
 @(include "nats.raw")  ;; get the definition of +
 
-;; we'll need this lemma later define the
-;; incr function.  see 08_add1_and_incr.raw
-;; for details.
-(claim incr
-  (-> Nat Nat))
-(define incr
-  (lambda (n)
-    (iter-Nat n
-      1
-      step-+)))
-
-(claim mot-add1=incr
-  (Pi ((n Nat))
-    U))
-(define mot-add1=incr
-  (lambda (n)
-    (= Nat (+ 1 n) (incr n))))
-
-(claim base-add1=incr
-  (= Nat (+ 1 zero) (incr zero)))
-(define base-add1=incr
-  (same (add1 zero)))
-
-(claim step-add1=incr
-  (Pi ((n Nat))
-    (-> (= Nat (+ 1        n ) (incr       n) )
-        (= Nat (+ 1  (add1 n)) (incr (add1 n))))))
-(define step-add1=incr
-  (lambda (_)
-    (lambda (n-1case)
-      (cong n-1case (the (-> Nat Nat) (lambda (n) (add1 n)))))))
-
-;; (+ 1 n) = (+ n 1)
-(claim add1=incr
- (Pi ((n Nat))
-  (= Nat (+ 1 n) (incr n))))
-;; and here is our proof:
-(define add1=incr
-   (lambda (n)
-     (ind-Nat n
-              mot-add1=incr
-              base-add1=incr
-              step-add1=incr)))
-
-
 ;; Now let's prove that + is commutative
 ;; i.e. that (+ n m) *equals* (+ m n)
 ;;
@@ -68,7 +23,7 @@
 (define step-plus-is-commutative-part1
  (lambda (_) ;; (m-1), but we don't need it
   (lambda (casem-1)
-   (cong casem-1 (the (-> Nat Nat) (lambda (k) (add1 k)))))))
+   (cong casem-1 (+ 1)))))
 
 (claim plus-is-commutative-part1
  (Pi ([m Nat]) ;; note that square brackets here work too.
@@ -94,41 +49,42 @@
 (define base-plus-is-commutative
   plus-is-commutative-part1)
 
-                 
+
 (claim step-plus-is-commutative
-       (Pi ([n-1 Nat])
+       (Pi ([n Nat])
            (-> (Pi ([m Nat])
-                   (= Nat (+ m       n-1 ) (+       n-1  m)))
+                   (= Nat (+ m       n ) (+       n  m)))
                (Pi ([m Nat])
-                   (= Nat (+ m (add1 n-1)) (+ (add1 n-1) m))))))
+                   (= Nat (+ m (+ 1 n)) (+ (+ 1 n) m))))))
 (define step-plus-is-commutative
-  (lambda (n-1)
-    (lambda (casen-1) ;; casen-1 is a (Pi ([m]) (= Nat (+ m n-1) (+ n-1 m))) "any m commutes with n-1" (1)
+  (lambda (n)
+    (lambda (casen) ;; casen is a (Pi ([m]) (= Nat (+ m n) (+ n m))) "any m commutes with n" (1)
        (lambda (m)
          (ind-Nat m
-           (lambda (m) (= Nat (+ m (add1 n-1)) (+ (add1 n-1) m))) ;; the motive
-           (symm (plus-is-commutative-part1 (add1 n-1))) ;; base case, of type (= Nat (+ 0 (add1 n-1))
-                                                         ;;                           (+ (add1 n-1) 0))
-                                                         ;; "0 commutes with (add1 n-1)"
-           (lambda (m-1)
-             (lambda (casem-1) ;; casem-1 is a     (= Nat (+       m-1  (add1 n-1)) (+ (add1 n-1)       m-1))
-                          ;;
-                          ;; "m-1 commutes with (add1 n-1)" (2)
-                          ;;
-                          ;; we must return a (= Nat (+ (add1 m-1) (add1 n-1)) (+ (add1 n-1) (add1 m-1)))
-                          ;;
-                          ;; "(add1 m-1) commutes with (add1 n-1)"
-                          ;;
-                          ;; Now we push symbols around in the only way we can.
-                          ;; Note how our evidence lines up out here ------------------|
-                (trans (the (= Nat (+ (add1 m-1) (add1 n-1)) (add1 (+ m-1 (add1 n-1)))) (same (+ (add1 m-1) (add1 n-1))) ) 
-                (trans (the (= Nat (add1 (+ m-1 (add1 n-1))) (add1 (+ (add1 n-1) m-1))) (cong casem-1 (+ 1))             ) 
-                (trans (the (= Nat (add1 (+ (add1 n-1) m-1)) (add1 (add1 (+ n-1 m-1)))) (same (+ (add1 n-1) m-1))        )
-                (trans (the (= Nat (add1 (add1 (+ n-1 m-1))) (add1 (add1 (+ m-1 n-1)))) (symm (cong (casen-1 m-1) (+ 2)))) 
-                (trans (the (= Nat (add1 (add1 (+ m-1 n-1))) (add1 (+ (add1 m-1) n-1))) (same (add1 (add1 (+ m-1 n-1)))) ) 
-                (trans (the (= Nat (add1 (+ (add1 m-1) n-1)) (add1 (+ n-1 (add1 m-1)))) (cong (casen-1 (add1 m-1)) (+ 1))) 
-                       (the (= Nat (add1 (+ n-1 (add1 m-1))) (+ (add1 n-1) (add1 m-1))) (same (add1 (+ n-1 (add1 m-1)))  ) 
-                           )))))))))))))
+           (lambda (m+1) (= Nat (+ m+1 (+ 1 n)) (+ (+ 1 n) m+1))) ;; the motive
+           (symm (plus-is-commutative-part1 (+ 1 n))) ;; base case, type (= Nat (+ 0 (+ 1 n)) (+ (+ 1 n) 0))
+                                                      ;; "0 commutes with (+ 1 n)"
+           (lambda (m)
+             (lambda (casem)
+               ;; casem is a       (= Nat (+      m  (+ 1 n)) (+ (+ 1 n)      m))
+               ;;
+               ;; "m commutes with (+ 1 n)" (2)
+               ;;
+               ;; we must return a (= Nat (+ (+ 1 m) (+ 1 n)) (+ (+ 1 n) (+ 1 m)))
+               ;;
+               ;; "(+ 1 m) commutes with (+ 1 n)"
+               ;;
+               ;; Now push symbols around in the only way one can.
+               ;; 
+               ;;                  FROM type              TO type                 Evidence           
+               (trans (the (= Nat  (+ (+ 1 m) (+ 1 n))  (+ 1 (+ m (+ 1 n))))  (same (+ (+ 1 m) (+ 1 n)))    )
+               (trans (the (= Nat  (+ 1 (+ m (+ 1 n)))  (+ 1 (+ (+ 1 n) m)))  (cong casem (+ 1))            ) 
+               (trans (the (= Nat  (+ 1 (+ (+ 1 n) m))  (+ 1 (+ 1 (+ n m))))  (same (+ 1 (+ (+ 1 n) m)))    )
+               (trans (the (= Nat  (+ 1 (+ 1 (+ n m)))  (+ 1 (+ 1 (+ m n))))  (symm (cong (casen m) (+ 2))) ) 
+               (trans (the (= Nat  (+ 1 (+ 1 (+ m n)))  (+ 1 (+ (+ 1 m) n)))  (same (+ 1 (+ 1 (+ m n))))    ) 
+               (trans (the (= Nat  (+ 1 (+ (+ 1 m) n))  (+ 1 (+ n (+ 1 m))))  (cong (casen (+ 1 m)) (+ 1))  ) 
+                      (the (= Nat  (+ 1 (+ n (+ 1 m)))  (+ (+ 1 n) (+ 1 m)))  (same (+ 1 (+ n (+ 1 m))))    ) 
+                      )))))))))))))
 
 
 (claim plus-is-commutative
@@ -184,11 +140,12 @@
         (step-plus-is-associative b c))))
 
 (claim mot-distributivity
-  (Pi ([b Nat] [c Nat] [a Nat])
-    U))
+  (Pi ([a Nat])
+      U))
 (define mot-distributivity
-  (lambda (b c a)
-    (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))
+  (lambda (a)
+    (Pi ([b Nat] [c Nat])
+      (= Nat (* (+ a b) c) (+ (* a c) (* b c))))))
 
 (claim base-distributivity
   (Pi ([b Nat] [c Nat])
@@ -198,31 +155,45 @@
     (same (* b c))))
 
 (claim step-distributivity
-  (Pi ([b Nat] [c Nat] [a Nat])
-    (-> (= Nat (* (+       a  b) c) (+ (*       a  c) (* b c)))
-        (= Nat (* (+ (add1 a) b) c) (+ (* (add1 a) c) (* b c))))))
-        ;; ((1+a)+b)*c = ((a+1)+b)*c          commutativity of addition
-        ;;             = (a+(1+b))*c          assoc of addition
-        ;;             = a*c + (1+b)*c        inductive hypothesis
-        ;;             = a*c + (c+(b*c))      def'n of multiplication
-        ;;             = (a*c + c) + b*c      associativity of addition
-        ;;             = (c + a*c) + b*c      commutativity of addition
-        ;;             = ((1+a)*c) + b*c      definition 
+  (Pi ([a Nat])
+    (-> (Pi ([b Nat] [c Nat])
+            (= Nat (* (+       a  b) c) (+ (*       a  c) (* b c))))
+        (Pi ([b Nat] [c Nat])
+            (= Nat (* (+ (add1 a) b) c) (+ (* (add1 a) c) (* b c)))))))
+;; Here is the proof, in infix notation
+;;
+;; ((1+a)+b)*c = ((a+1)+b)*c          commutativity of addition
+;;             = (a+(1+b))*c          assoc of addition
+;;             = a*c + (1+b)*c        inductive hypothesis
+;;             = a*c + (c+(b*c))      def'n of multiplication
+;;             = (a*c + c) + b*c      associativity of addition
+;;             = (c + a*c) + b*c      commutativity of addition
+;;             = ((1+a)*c) + b*c      definition of multiplication
+;;
 (define step-distributivity
-  (lambda (b c)
-    (lambda (a)
-      (lambda (casea)
-        TODO))))
-
-(claim distributivity
-  (Pi ([a Nat] [b Nat] [c Nat])
-    (= Nat (* (+ a b) c) (+ (* a c) (* b c))))) ;; (a+b)*c = (a*c)+(b*c)
+  (lambda (a)
+    (lambda (casea) ;; a (Pi ([b Nat] [c Nat]) (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))))
+      (lambda (b c)
+;;                          FROM                        TO                          Evidence
+        (trans (the  (= Nat (* (+ (+ 1 a) b) c)         (* (+ (+ a 1) b) c))        (cong (plus-is-commutative a 1) (the (-> Nat Nat) (lambda (n) (* (+ n b) c))))  )
+        (trans (the  (= Nat (* (+ (+ a 1) b) c)         (* (+ a (+ 1 b)) c))        (cong (plus-is-associative a 1 b) (the (-> Nat Nat) (lambda (n) (* n c))))      )
+        (trans (the  (= Nat (* (+ a (+ 1 b)) c)         (+ (* a c) (* (+ 1 b) c)))  (casea (+ 1 b) c) ) 
+        (trans (the  (= Nat (+ (* a c) (* (+ 1 b) c))   (+ (* a c) (+ c (* b c))))  (same (+ (* a c) (+ c (* b c)))) )
+        (trans (the  (= Nat (+ (* a c) (+ c (* b c)))   (+ (+ (* a c) c) (* b c)))  (symm (plus-is-associative (* a c) c (* b c))) )
+        (trans (the  (= Nat (+ (+ (* a c) c) (* b c))   (+ (+ c (* a c)) (* b c)))  (cong (plus-is-commutative c (* a c)) (the (-> Nat Nat) (lambda (n) (+ n (* b c))))))
+               (the  (= Nat (+ (+ c (* a c)) (* b c))   (+ (* (+ 1 a) c) (* b c)))  (same (+ (+ c (* a c)) (* b c))) )
+               ))))))))))
+        
+(claim distributivity ;; ok, well, this is just left-distributivity.
+  (Pi ([a Nat])
+    (Pi ([b Nat] [c Nat])
+     (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))) ;; (a+b)*c = (a*c)+(b*c)
 (define distributivity
-  (lambda (a b c)
+  (lambda (a)
     (ind-Nat a
-      (mot-distributivity b c)
-      (base-distributivity b c)
-      TODO))) ;;(step-distributivity b c))))
+      mot-distributivity
+      base-distributivity
+      step-distributivity)))
 
 (claim mult-has-an-identity
   (Sigma ([one Nat])
@@ -231,14 +202,16 @@
 (define mult-has-an-identity
   (cons (add1 zero)
     (lambda (n)
-      (same n))))
+      (trans (the   (= Nat (* 1 n) (+ n 0))   (same (+ n 0)))
+      (trans (the   (= Nat (+ n 0) (+ 0 n))   (plus-is-commutative 0 n))
+             (the   (= Nat (+ 0 n) n      )   (same n)))))))
 
 (claim mot-mult-is-associative
-  (Pi ([b Nat] [c Nat] [a Nat])
-    U))
+  (Pi ([a Nat]) U))
 (define mot-mult-is-associative
-  (lambda (b c)
-    (lambda (a) (= Nat (* (* a b) c) (* a (* b c))))))
+  (lambda (a)
+    (Pi ([b Nat] [c Nat])
+      (= Nat (* (* a b) c) (* a (* b c))))))
 
 (claim base-mult-is-associative
   (Pi ([b Nat] [c Nat])
@@ -248,30 +221,113 @@
     (same zero)))
 
 (claim step-mult-is-associative
-  (Pi ([b Nat] [c Nat] [a Nat])
-    (-> (= Nat (* (*       a  b) c) (*       a  (* b c)))
-        (= Nat (* (* (add1 a) b) c) (* (add1 a) (* b c))))))
+  (Pi ([a Nat])
+    (-> (Pi ([b Nat] [c Nat])
+          (= Nat (* (*       a  b) c) (*       a  (* b c))))
+        (Pi ([b Nat] [c Nat])
+            (= Nat (* (* (add1 a) b) c) (* (add1 a) (* b c)))))))
+;;
+;; Here is the proof, in infix notation:
+;;
+;;              ((1+a)*b)*c = ((a+1)*b)*c       commutativity of addition
+;;                          = (a*b+1*b)*c       distributivity a 1 b
+;;                          = (a*b)*c+(1*b)*c   'distributivity  (a*b) (1*b) c'
+;;                          = a*(b*c)+(1*b)*c   inductive hypothesis
+;;                          = a*(b*c)+(b*c)     '1*b=b'
+;;                          = a*(b*c)+1*(b*c)   '(b*c)=1*(b*c)'
+;;                          = (a+1)*(b*c)       'distributivity a 1 (b*c)'
+;;
+
+(claim NN U)
+(define NN
+  (-> Nat Nat))
+
 (define step-mult-is-associative
-  (lambda (b c)
-    (lambda (a)
-      (lambda (casea)
-        TODO)))) ;; know (a*b)*c = a*(b*c)
-                 ;; want to show ((a+1)*b)*c = (a+1)*(b*c)
-                 ;;
-                 ;;              ((a+1)*b)*c = (a*b+1*b)*c       'distributivity a 1 b'
-                 ;;                          = (a*b)*c+(1*b)*c   'distributivity  (a*b) (1*b) c'
-                 ;;                          = a*(b*c)+(1*b)*c   'commutativity of mult'
-                 ;;                          = a*(b*c)+(b*c)     '1*b=b'
-                 ;;                          = a*(b*c)+1*(b*c)   '(b*c)=1*(b*c)'
-                 ;;                          = (a+1)*(b*c)       'distributivity a 1 (b*c)'
+  (lambda (a)
+    (lambda (casea)
+      (lambda (b c)
+        (trans (the  (= Nat (* (* (+ 1 a) b) c)              (* (* (+ a 1) b) c)            ) (cong (plus-is-commutative a 1) (the NN (lambda (n) (* (* n b) c))))) 
+        (trans (the  (= Nat (* (* (+ a 1) b) c)              (* (+ (* a b) (* 1 b)) c)      ) (cong (distributivity a 1 b) (the NN (lambda (n) (* n c)))))
+        (trans (the  (= Nat (* (+ (* a b) (* 1 b)) c)        (+ (* (* a b) c) (* (* 1 b) c))) (distributivity (* a b) (* 1 b) c))
+        (trans (the  (= Nat (+ (* (* a b) c) (* (* 1 b) c))  (+ (* a (* b c)) (* (* 1 b) c))) (cong (casea b c) (the NN (lambda (n) (+ n (* (* 1 b) c))) )))
+        (trans (the  (= Nat (+ (* a (* b c)) (* (* 1 b) c))  (+ (* a (* b c)) (* b c))      ) (cong ((cdr mult-has-an-identity) b) (the NN (lambda (n) (+ (* a (* b c)) (* n c))))))
+        (trans (the  (= Nat (+ (* a (* b c)) (* b c))        (+ (* a (* b c)) (* 1 (* b c)))) (symm (cong ((cdr mult-has-an-identity) (* b c)) (the NN (lambda (n) (+ (* a (* b c)) n))))))
+        (trans (the  (= Nat (+ (* a (* b c)) (* 1 (* b c)))  (* (+ a 1) (* b c))            ) (symm (distributivity a 1 (* b c))))
+               (the  (= Nat (* (+ a 1) (* b c))              (* (+ 1 a) (* b c))            ) (cong (plus-is-commutative 1 a) (the NN (lambda (n) (* n (* b c))))))
+               )))))))))))
+               
 
 (claim mult-is-associative
-  (Pi ([a Nat] [b Nat] [c Nat])
-    (= Nat (* (* a b) c) (* a (* b c)))))
+  (Pi ([a Nat])
+    (Pi ([b Nat] [c Nat])
+      (= Nat (* (* a b) c) (* a (* b c))))))
 (define mult-is-associative
-  (lambda (a b c)
-      (ind-Nat a
-        (mot-mult-is-associative b c)
-        (base-mult-is-associative b c)
-        (step-mult-is-associative b c))))
+  (lambda (a)
+    (ind-Nat a
+      mot-mult-is-associative
+      base-mult-is-associative
+      step-mult-is-associative)))
 
+(claim mot-mult-is-commutative
+  (Pi ([n Nat])
+    U))
+(define mot-mult-is-commutative
+  (lambda (n)
+    (Pi ([m Nat])
+      (= Nat (* m n) (* n m)))))
+
+(claim base-mult-is-commutative
+  (Pi ([m Nat])
+    (= Nat (* m zero) (* zero m))))
+(define base-mult-is-commutative
+  (lambda (m)
+    (ind-Nat m ;; induct on m
+      (lambda (m) (= Nat (* m zero) (* zero m))) ;; the motive
+      (same zero)                           ;; the base, a (= Nat (* zero zero) (* zero zero))
+      (lambda (k)
+        (lambda (prevcase);; the step.  If "(* k zero) == zero" then "(* (add1 k) zero) == zero" too.
+          (cong prevcase (+ zero)))))))
+
+(claim step-mult-is-commutative
+  (Pi ([n Nat])
+    (-> (Pi ([m Nat])
+            (= Nat (* m n) (* n m)))
+        (Pi ([m Nat])
+            (= Nat (* m (+ 1 n)) (* (+ 1 n) m))))))
+(define step-mult-is-commutative
+  (lambda (n)
+    (lambda (casen)  ;; n *-commutes with everything
+      (lambda (m)
+        (ind-Nat m
+          (lambda (m+1) (= Nat (* m+1 (+ 1 n)) (* (+ 1 n) m+1))) ;; the motive
+          (symm (base-mult-is-commutative (+ 1 n)))         ;; the base    (0 commutes with (n+1))
+          (lambda (m)
+            (lambda (casem)
+              ;; casem is a        (= Nat (*      m  (+ 1 n)) (* (+ 1 n)      m ))
+              ;;
+              ;; we must return a  (= Nat (* (+ 1 m) (+ 1 n)) (* (+ 1 n) (+ 1 m)))
+              ;;
+              ;;                  FROM                        TO                          Evidence
+              (trans (the (= Nat  (* (+ 1 m) (+ 1 n))         (+ (+ 1 n) (* m (+ 1 n))))  (same (* (+ 1 m) (+ 1 n))))
+              (trans (the (= Nat  (+ (+ 1 n) (* m (+ 1 n)))   (+ (+ 1 n) (* (+ 1 n) m)))  (cong casem (the NN (lambda (nn) (+ (+ 1 n) nn)))))
+              (trans (the (= Nat  (+ (+ 1 n) (* (+ 1 n) m))   (+ (+ 1 n) (+ m (* n m))))  (same (+ (+ 1 n) (* (+ 1 n) m))))
+              (trans (the (= Nat  (+ (+ 1 n) (+ m (* n m)))   (+ 1 (+ n (+ m (* n m)))))  (plus-is-associative 1 n (+ m (* n m))))
+              (trans (the (= Nat  (+ 1 (+ n (+ m (* n m))))   (+ 1 (+ n (+ m (* m n)))))  (cong (the (= Nat (* n m) (* m n)) (symm (casen m))) (the NN (lambda (nn) (+ 1 (+ n (+ m nn)))))))
+              (trans (the (= Nat  (+ 1 (+ n (+ m (* m n))))   (+ 1 (+ (+ n m) (* m n))))  (cong (symm (plus-is-associative n m (* m n))) (+ 1)))
+              (trans (the (= Nat  (+ 1 (+ (+ n m) (* m n)))   (+ 1 (+ (+ m n) (* m n))))  (cong (plus-is-commutative m n) (the NN (lambda (nn) (+ 1 (+ nn (* m n)))))))
+              (trans (the (= Nat  (+ 1 (+ (+ m n) (* m n)))   (+ 1 (+ m (+ n (* m n)))))  (cong (plus-is-associative m n (* m n)) (the NN (lambda (nn) (+ 1 nn)))))
+              (trans (the (= Nat  (+ 1 (+ m (+ n (* m n))))   (+ 1 (+ m (* (+ 1 m) n))))  (same (+ 1 (+ m (* (+ 1 m) n)))))
+              (trans (the (= Nat  (+ 1 (+ m (* (+ 1 m) n)))   (+ 1 (+ m (* n (+ 1 m)))))  (cong (the (= Nat (* (+ 1 m) n) (* n (+ 1 m))) (casen (+ 1 m)) ) (the NN (lambda (nn) (+ 1 (+ m nn))))))
+              (trans (the (= Nat  (+ 1 (+ m (* n (+ 1 m))))   (+ (+ 1 m) (* n (+ 1 m))))  (symm (plus-is-associative 1 m (* n (+ 1 m)))))
+                     (the (= Nat  (+ (+ 1 m) (* n (+ 1 m)))   (* (+ 1 n) (+ 1 m))      )  (same (* (+ 1 n) (+ 1 m))) )
+                     ))))))))))))))))))
+
+(claim mult-is-commutative
+  (Pi ([n Nat] [m Nat])
+    (= Nat (* m n) (* n m))))
+(define mult-is-commutative
+  (lambda (n)
+    (ind-Nat n
+      mot-mult-is-commutative
+      base-mult-is-commutative
+      step-mult-is-commutative)))

@@ -27,19 +27,19 @@
    step-+)))
 
 ;; multiplication operator for Nat's
-;;
+
 (claim base-*
  (-> Nat Nat))
 (define base-*
  (lambda (m) 0))
 
 (claim step-*
- (-> Nat Nat
-      Nat))
+ (-> Nat
+   (-> Nat Nat)))
 (define step-*
  (lambda (m)
   (lambda (timesn-1)
-   (+ timesn-1 m))))
+   (+ m timesn-1))))
 
 (claim *
  (-> Nat Nat Nat))
@@ -49,38 +49,37 @@
    (base-* m)
    (step-* m))))
 
-;; 'gauss' function
-;;
-;; (gauss n) = 1 + 2 ... + n
-;;
-(claim step-gauss
-       (-> Nat Nat
-	   Nat))
 
-(define step-gauss
-  (lambda (n-1 gaussn-1)
-    (+ (add1 n-1) gaussn-1)))
-
-(claim gauss
-       (-> Nat Nat))
-(define gauss
-  (lambda (n)
-    (rec-Nat n
-	     0
-	     step-gauss)))
-
-;; Gauss's solution, but I don't know how to divide yet.
 ;;
-;; (claim gauss2
-;;        (-> Nat Nat))
-;; (define gauss2
+;; c + (a*c) == (1+a) * c (are they the same?)
+;;
+(claim test-*
+  (Pi ([a Nat] [c Nat])
+    (= Nat (+ c (* a c)) (* (+ 1 a) c))))
+(define test-*
+  (lambda (a c)
+    (same (+ c (* a c)))))
+
+;; (claim step-*
+;;   (Pi ([n Nat])
+;;     (-> (-> Nat Nat)
+;;         (-> Nat Nat))))
+
+;; (define step-*
 ;;   (lambda (n)
-;;     (/ (* n (add1 n)) 2)))
+;;     (lambda (prev)
+;;       (lambda (m) (+ m (prev m))))))
 
-(+ 8 9) ;; 17
+;; (claim *
+;;   (-> Nat
+;;     (-> Nat Nat)))
+;; (define *
+;;   (lambda (n)
+;;     (ind-Nat n
+;;       (lambda (n) (-> Nat Nat)) ;; the motive
+;;       (lambda (_) 0)            ;; the base
+;;       step-*)))       ;; the step
 
-(* 31 11) ;; 341
-
-(+ (* 10 (* 10 10)) (* 9 (* 9 9))) ;; 1729
-
-(gauss 100) ;; 5050, the answer to Gauss' teacher's apocryphal question.
+;; (+ 8 9) ;; 17
+;; (* 31 11) ;; 341
+;; (+ (* 10 (* 10 10)) (* 9 (* 9 9))) ;; 1729
