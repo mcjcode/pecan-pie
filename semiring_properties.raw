@@ -1,4 +1,16 @@
-@(include "nats.raw")  ;; get the definition of +
+@(include "nats.raw")  ;; get the definition of + and *
+
+;; What is in here that you may care about, and
+;; the exact types so that we get the FROM's and
+;; TO's in the correct order.
+;;
+;; plus-is-commutative            (Pi ([n Nat] [m Nat])             (= Nat   (+ m n)         (+ n m)             ))
+;; plus-has-an-additive-identity  (Sigma ([zro Nat]) (Pi ([n Nat])  (= Nat   (+ zro n)       n                   )))
+;; plus-is-associative            (Pi ([a Nat] [b Nat] [c Nat])     (= Nat   (+ (+ a b) c)   (+ a (+ b c))       ))
+;; distributivity                 (Pi ([a Nat] [b Nat] [c Nat])     (= Nat   (* (+ a b) c)   (+ (* a c) (* b c)) ))
+;; mult-has-an-identity           (Sigma ([one Nat]) (Pi ([n Nat])  (= Nat   (* one n)       n                   )))
+;; mult-is-associative            (Pi ([a Nat] [b Nat] [c Nat])     (= Nat   (* (* a b) c)   (* a (* b c))       ))
+;; mult-is-commutative            (Pi ([n Nat] [m Nat])             (= Nat   (* m n)         (* n m)             ))
 
 ;; Now let's prove that + is commutative
 ;; i.e. that (+ n m) *equals* (+ m n)
