@@ -1,22 +1,6 @@
 
-;; define the + function "(+ n m) increments 'm' n times" 
-(claim base-+
- (-> Nat Nat))
-(define base-+
- (lambda (m) m))
-
-(claim step-+
- (-> Nat Nat))
-(define step-+
- (lambda (k) (add1 k)))
-
-(claim +
- (-> Nat Nat Nat))
-(define +
- (lambda (n m)
-  (iter-Nat n
-   (base-+ m)
-   step-+)))
+;; include nats.raw to get definition of +
+@(include "nats.raw") 
 
 (claim double
  (-> Nat Nat))

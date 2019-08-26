@@ -1,5 +1,5 @@
+@(include "nats.raw")
 
-;; define the + function "(+ n m) increments 'm' n times" 
 (claim base-+
  (-> Nat Nat))
 (define base-+

@@ -1,23 +1,4 @@
-
-;; define the + function "(+ n m) increments 'm' n times" 
-(claim base-+
- (-> Nat Nat))
-(define base-+
- (lambda (m) m))
-
-(claim step-+
- (-> Nat Nat))
-(define step-+
- (lambda (j)
-   (add1 j)))
-
-(claim +
- (-> Nat Nat Nat))
-(define +
- (lambda (n m)
-  (iter-Nat n
-   (base-+ m)
-   step-+)))
+@(include "nats.raw")
 
 (claim double
  (-> Nat Nat))
@@ -31,9 +12,6 @@
     (iter-Nat n
               zero
               (+ 2))))
-
-;; (double 17)
-;; (twice 17)
 
 ;; note that we are inducting over the second
 ;; argument 'm'
