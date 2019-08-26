@@ -1,0 +1,47 @@
+(claim Maybe
+  (Pi ([E U]) U))
+(define Maybe
+  (lambda (E)
+    (Either E Trivial)))
+
+(claim just
+  (Pi ([E U])
+    (-> E (Maybe E))))
+(define just
+  (lambda (E)
+    (lambda (e) (left e))))
+
+(claim nothing
+  (Pi ([E U])
+    (Maybe E)))
+(define nothing
+  (lambda (E) (right sole)))
+
+;; (claim listWithNaNs
+;;   (List (Maybe Nat)))
+;; (define listWithNaNs
+;;   (:: (just Nat 3)
+;;     (:: (just Nat 1)
+;;       (:: (just Nat 4)
+;;         (:: (nothing Nat)
+;;           (:: (just Nat 5) nil))))))
+
+;; now define data types with fixed
+;; numbers of members.
+(claim Fin
+  (-> Nat U))
+(define Fin
+  (lambda (n)
+    (iter-Nat n
+      Absurd
+      (lambda (E) (Either Trivial E)))))
+
+;; (the (Fin 3)
+;;   (left sole))
+;; (the (Fin 3)
+;;   (right
+;;     (left sole)))
+;; (the (Fin 3)
+;;   (right
+;;     (right
+;;       (left sole))))
