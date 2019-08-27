@@ -1,0 +1,110 @@
+;; including zero_does_not_equal_one.raw to get
+;; the claim/definition of 'zero?'
+
+@(include "zero_does_not_equal_one.raw")
+
+;;
+;; attempt at building a replacement
+;; for the 'head' eliminator for Vec,
+;; using ind-Vec as our eliminator.
+;;
+;; start reading down at the claim for front.
+
+(claim mot-front
+  (Pi ([E U]
+       [n Nat]
+       [es (Vec E n)])
+    U))
+;;
+;; would like to write
+;;
+;; (define mot-front
+;;   (lambda (E n es)
+;;     E))
+;;
+;; here for the mot, but if we get down to
+;; the base, we won't have a member of E to
+;; pass back (which is important, even though
+;; in practice, we will **never get to
+;; the base case!**.
+;; 
+;; so we try something different.
+(define mot-front
+  (lambda (E) ;; this is passed to mot in defining the motive
+    (lambda (n _es) ;; these are the arguments to the motive (dimming es)
+      (Pi ([j Nat])
+        (-> (= Nat n (add1 j))
+            E)))))
+
+(claim base-front
+  (Pi ([E U])
+    (Pi ([j Nat])
+      ;; Notice that we'll never be able
+      ;; to supply the following evidence.
+      (-> (= Nat 0 (add1 j))  
+          E))))
+(define base-front
+  (lambda (E)
+    (lambda (j)
+      (lambda (zero=add1j)
+        ;; at this point, we want to take our supposed
+        ;; evidence 'zero=add1j' and conclude Absurd, then
+        ;; use ind-Absurd to get an E return type out
+        ;; of it.
+        (ind-Absurd (zero? (add1 j) zero=add1j)
+          E)))))
+
+(claim step-front
+  (Pi ([E U]
+       [n Nat]
+       [e E]
+       [es (Vec E n)])
+    (-> (mot-front E       n           es)
+        (mot-front E (add1 n) (vec:: e es)))))
+(define step-front
+  (lambda (E) ;; passed in to create the step that ind-Vec expects
+    (lambda (n e es) ;; the arguments to an ind-Vec step function
+      (lambda (prev) ;; a (Pi ([j Nat]) (-> (= Nat n (add1 j)) E))
+        (lambda (j) (lambda (n+1==add1j) e) )))))
+
+;; first, note how it is impossible
+;; to pass in a length 0 Vec, since
+;; the type of the Vec precludes this.
+(claim front
+  (Pi ([E U] [n Nat])
+    (-> (Vec E (add1 n))
+        E)))
+(define front
+  (lambda (E n es)
+    ;; although front's type signature
+    ;; precludes es from being vecnil,
+    ;; ind-Vec does not accomodate this
+    ;; idea, as target-1 must be the
+    ;; length of target-2.  That is,
+    ;; I can't write
+    ;;
+    ;; (ind-Vec n es
+    ;; 
+    ;; on the next line:
+    ;;
+    ((ind-Vec (add1 n) es
+       (mot-front E)                  ;; motive
+       (base-front E)                 ;; base
+       (step-front E))                ;; step
+     n (same (add1 n)) )))            ;; we provide evidence that target-1 is not zero!
+
+;;
+;; This is correct, but the business of passing
+;; in a Nat one less than the length of the Vec
+;; is bound to be error prone.
+;;
+
+(front Atom 0 (vec:: 'blastoff vecnil))  
+(front Atom 3 (vec:: 'three (vec:: 'two (vec:: 'one (vec:: 'blastoff vecnil)))))
+    
+;; Exercises.  Try to make similar implementations
+;; for these Vec functions -
+;;
+;; drop-last
+;; rest       
+
