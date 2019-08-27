@@ -2,7 +2,13 @@
 ;; At long last, we prove that 0 and 1 are not equal!
 ;;
 
-;; We define the ind-Nat motive
+;;
+;; the key, to me, is observing that eliminators
+;; such as which-Nat are able to tell Nats apart.
+;;
+
+;; Based on this observation, we define an ind-Nat motive
+;;
 ;;   0          -->  Trivial
 ;;   Otherwise  -->  Absurd
 ;;
@@ -15,7 +21,7 @@
       (lambda (_)
         Absurd))))
 
-;; if you pass in 0, you get back a
+;; If you pass in 0, you get back a
 ;;
 ;; (-> (= Nat 0 0) Trivial)
 ;;
@@ -48,3 +54,15 @@
   (zero? 1))
 
 ;; zero-does-not-equal-one
+;;
+;; (the (→ (= Nat 0 1)
+;;        Absurd)
+;;   (lambda (zero=n)
+;;     (the Absurd
+;;       (replace zero=n
+;;         (λ (n)
+;;           (which-Nat n
+;;              (the U Trivial)
+;;              (λ (_)
+;;                Absurd)))
+;;         sole))))
