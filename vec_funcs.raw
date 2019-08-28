@@ -1,0 +1,32 @@
+(claim step-map-Vec
+  (Pi ([E U]
+       [F U]
+       [f (-> E F)]
+       [n Nat] [e E] [es (Vec E n)])
+    (-> (Vec F       n )
+        (Vec F (add1 n)))))
+(define step-map-Vec
+  (lambda (E F f n e es)
+    (lambda (prevstep)
+      (vec:: (f e) prevstep))))
+          
+(claim map-Vec
+  (Pi ([E U] [F U] [f (-> E F)] [n Nat])
+    (-> (Vec E n)
+        (Vec F n))))
+(define map-Vec
+  (lambda (E F f n es)
+    (ind-Vec n es
+       (lambda (n es) (Vec F n)) ;; the mot
+       (the (Vec F 0) vecnil) ;; the base
+       (step-map-Vec E F f))))
+
+;;
+;; Here, try it out:
+
+;; (map-Vec Nat Nat (lambda (n) (add1 n)) 5 (vec:: 4
+;;                                       (vec:: 3 
+;;                                         (vec:: 2
+;;                                           (vec:: 1
+;;                                             (vec:: 0
+;;                                               vecnil))))))
