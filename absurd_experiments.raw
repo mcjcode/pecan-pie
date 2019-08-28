@@ -1,0 +1,13 @@
+(claim test1
+  (-> Absurd Nat))
+(define test1
+  (lambda (impossible) zero))
+
+(claim test2
+  (Pi ([E U])
+    (-> Absurd E)))
+(define test2
+  (lambda (E)
+    (lambda (impossible)
+      (ind-Absurd impossible
+        E))))
