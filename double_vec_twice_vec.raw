@@ -1,23 +1,5 @@
 @(include "nats.raw")
 
-(claim base-+
- (-> Nat Nat))
-(define base-+
- (lambda (m) m))
-
-(claim step-+
- (-> Nat Nat))
-(define step-+
- (lambda (k) (add1 k)))
-
-(claim +
- (-> Nat Nat Nat))
-(define +
- (lambda (n m)
-  (iter-Nat n
-   (base-+ m)
-   step-+)))
-
 ;; double a Nat.
 (claim double
  (-> Nat Nat))

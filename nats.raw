@@ -83,3 +83,33 @@
 ;; (+ 8 9) ;; 17
 ;; (* 31 11) ;; 341
 ;; (+ (* 10 (* 10 10)) (* 9 (* 9 9))) ;; 1729
+
+(claim mot-range
+  (-> Nat U))
+(define mot-range
+  (lambda (n)
+    (Vec Nat n)))
+
+(claim base-range
+  (mot-range zero))
+(define base-range
+  (the (Vec Nat zero) vecnil))
+
+(claim step-range
+  (Pi ([n Nat])
+    (-> (mot-range n)             ;; (Vec Nat       n )
+        (mot-range (add1 n)))))   ;; (Vec Nat (add1 n))
+(define step-range
+  (lambda (n)
+    (lambda (casen)
+      (vec:: (add1 n) casen))))
+
+(claim range
+  (Pi ([n Nat])
+    (Vec Nat n)))
+(define range
+  (lambda (n)
+    (ind-Nat n
+      mot-range
+      base-range
+      step-range)))

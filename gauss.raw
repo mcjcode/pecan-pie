@@ -1,0 +1,109 @@
+;; We will prove that
+;;
+;; (2*1 + 2*2 + ... + 2*n) = n*(n+1)
+;;
+;; which is (a form of) the formula of the
+;; Gauss legend mentioned in The Little Typer
+;;
+
+;; include nats.raw to get definitions of +, *, range
+;; and their arithmetic properties.
+;;
+@(include "semiring_properties.raw")
+
+;; (* 7 13)
+
+
+;; (range 0)
+;; (range 1)
+;; (range 2)
+
+(claim mot-sum-Nats
+  (Pi ([n Nat])
+    (-> (Vec Nat n)
+      U)))
+(define mot-sum-Nats
+  (lambda (_ _)
+    Nat))
+
+(claim step-sum-Nats
+  (Pi ([n Nat] [v Nat] [vs (Vec Nat n)])
+    (-> (mot-sum-Nats       n           vs )    ;; Vec Nat n
+        (mot-sum-Nats (add1 n) (vec:: v vs))))) ;; Vec Nat (add1 n)
+(define step-sum-Nats
+  (lambda (n)
+    (lambda (v _ x)
+      (+ v x))))
+
+(claim sum-Nats
+  (Pi ([n Nat])
+    (-> (Vec Nat n)
+      Nat)))
+(define sum-Nats
+  (lambda (n)
+    (lambda (vs)
+      (ind-Vec n
+         vs
+         mot-sum-Nats
+         zero     ;; the base. "sum []"
+         step-sum-Nats)))) ;; step
+
+
+(claim gauss-naive
+  (-> Nat
+    Nat))
+(define gauss-naive
+  (lambda (n)
+    (sum-Nats n (range n))))
+
+(gauss-naive  12) ;; (the Nat 78)
+(gauss-naive 100) ;; (the Nat 5050)
+
+(claim mot-gauss-legend
+  (Pi ([n Nat]) U))
+(define mot-gauss-legend
+  (lambda (n)
+    (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))))
+
+(claim base-gauss-legend
+  (= Nat (* 2 (sum-Nats zero (range zero))) (* (add1 zero) zero)))
+(define base-gauss-legend
+  (same zero))
+
+(claim step-gauss-legend
+  (Pi ([n Nat])
+    (-> (mot-gauss-legend n) ;; (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))
+      (mot-gauss-legend (add1 n)))))
+;;
+;; outline of the inductive step
+;;
+;; (2 * sum(1..(1+n)) = (2 * ((1+n) + sum(1..n))) (same, by defn of sum)
+;;                    = (2 * (1+n) + 2 * sum(1..n)) (distributivity)
+;;                    = (2 * (1+n) + n*(1+n) )      (inductive_hypothesis)
+;;                    = ((2+n)*(1+n))               (distributivity, in reverse)
+;;                    = ((1+(1+n))*(1+n))           (same,  by def'n of +
+(define step-gauss-legend
+  (lambda (n)
+    (lambda (casen) ;; a (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))
+      (trans (the (= Nat  (* 2 (sum-Nats (+ 1 n) (range (+ 1 n))))        (* 2 (+ (+ 1 n) (sum-Nats n (range n)))))       (same (* 2 (+ (+ 1 n) (sum-Nats n (range n))))))
+      (trans (the (= Nat  (* 2 (+ (+ 1 n) (sum-Nats n (range n))))        (* (+ (+ 1 n) (sum-Nats n (range n))) 2))       (mult-is-commutative (+ (+ 1 n) (sum-Nats n (range n))) 2))
+      (trans (the (= Nat  (* (+ (+ 1 n) (sum-Nats n (range n))) 2)        (+ (* (+ 1 n) 2) (* (sum-Nats n (range n)) 2))) (distributivity  (+ 1 n) (sum-Nats n (range n)) 2))
+      (trans (the (= Nat  (+ (* (+ 1 n) 2) (* (sum-Nats n (range n)) 2))  (+ (* 2 (+ 1 n)) (* (sum-Nats n (range n)) 2))) (cong (mult-is-commutative 2 (+ 1 n)) (the NN (lambda (nn) (+ nn (* (sum-Nats n (range n)) 2))))))
+      (trans (the (= Nat  (+ (* 2 (+ 1 n)) (* (sum-Nats n (range n)) 2))  (+ (* 2 (+ 1 n)) (* 2 (sum-Nats n (range n))))) (cong (mult-is-commutative 2 (sum-Nats n (range n))) (the NN (lambda (nn) (+ (* 2 (+ 1 n)) nn)))))
+      (trans (the (= Nat  (+ (* 2 (+ 1 n)) (* 2 (sum-Nats n (range n))))  (+ (* 2 (+ 1 n)) (* (+ 1 n) n)))                (cong casen (the NN (lambda (nn) (+ (* 2 (+ 1 n)) nn) ))))
+      (trans (the (= Nat  (+ (* 2 (+ 1 n)) (* (+ 1 n) n))                 (+ (* 2 (+ 1 n)) (* n (+ 1 n))))                (cong (mult-is-commutative n (+ 1 n)) ( the NN (lambda (nn) (+ (* 2 (+ 1 n)) nn)))))
+      (trans (the (= Nat (+ (* 2 (+ 1 n)) (* n (+ 1 n)))                  (* (+ 2 n) (+ 1 n)))                            (symm (distributivity 2 n (+ 1 n))))
+             (the (= Nat (* (+ 2 n) (+ 1 n))                              (* (+ 1 (+ 1 n)) (+ 1 n)))                      (same (* (+ 1 (+ 1 n)) (+ 1 n))))
+             )))))))))))
+             
+             
+;; now for the 'gauss' theorem
+(claim gauss-legend
+  (Pi ([n Nat])
+    (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))))
+(define gauss-legend
+  (lambda (n)
+    (ind-Nat n
+      mot-gauss-legend
+      base-gauss-legend
+      step-gauss-legend)))
