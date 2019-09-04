@@ -45,3 +45,23 @@
 ;;   (right
 ;;     (right
 ;;       (left sole))))
+
+;;
+;; I wan't a 2-member type, but can't bring
+;; myself to call in Bool or use the words
+;; true and false.  So this is what I've got:
+;;
+(claim Thumb
+  U)
+(define Thumb
+  (Fin 2))
+
+(claim thumbs-up
+  Thumb)
+(define thumbs-up
+  (right (left sole)))
+
+(claim thumbs-down
+  Thumb)
+(define thumbs-down
+  (left sole))
