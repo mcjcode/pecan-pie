@@ -1,0 +1,72 @@
+;;
+;; write out what we think the consequences of n==m should be.
+;;
+;; This returns a type, so I'm capitalizing the function to
+;; reflect this.
+;;
+
+(claim Consequences=Nat
+  (-> Nat Nat
+      U))
+(define Consequences=Nat
+  (lambda (m n)
+    (which-Nat m
+      (which-Nat n
+        Trivial
+        (lambda (n-1)
+          Absurd))
+      (lambda (m-1)
+        (which-Nat n
+          Absurd
+          (lambda (n-1)
+            (= Nat m-1 n-1)))))))
+
+(Consequences=Nat 0 0)
+(Consequences=Nat 0 1)
+(Consequences=Nat 1 0)
+(Consequences=Nat 1 1)
+
+;;
+;; Now, consequences=Nat just expresses our opinion, saying
+;; what we think is true, e.g. that if (add1 m) and (add1 n)
+;; are equal, then m and n are equal.  But that doesn't make
+;; it true.
+;;
+
+;;
+;; now let's write a function that proves that these
+;; consequences follow from (= Nat m n)
+;;
+
+;;
+;; first do one for the cases where we know how to return
+;; an actual value (the non-Absurd cases)
+;;
+(claim consequence-same
+  (Pi ([m Nat]) (Consequences=Nat m m)))
+(define consequence-same
+  (lambda (m)
+    ;; can't use which-Nat here, because I have to specify
+    ;; the return type!
+    ;; (which-Nat m
+    ;;   TODO
+    ;;   TODO)))
+    (ind-Nat m
+      (lambda (m) (Consequences=Nat m m)) ;; the mot
+      sole ;; the base
+      (lambda (m _prev) (same m))))) ;; the step
+
+;; now we use 'replace' to do the general case.
+(claim use-Nat ;; what's a good name for this?  I don't get what 'use-Nat' signifies
+  (Pi ([m Nat] [n Nat])
+       (-> (= Nat m n)               ;; if someone gives us evidence that m equals n
+           (Consequences=Nat m n)))) ;; then we give them evidence of our proposed Consequence.
+(define use-Nat
+  (lambda (m n)
+    (lambda (m=n)
+      (replace m=n
+         (lambda (k)
+           (Consequences=Nat m k))
+         (consequence-same m)))))
+  
+
