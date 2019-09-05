@@ -1,16 +1,22 @@
 @(include "nats.raw")  ;; get the definition of + and *
+@(include "consequences.raw")  ;; get the definition of use-Nat
 
 ;; What is in here that you may care about, and
 ;; the exact types so that we get the FROM's and
 ;; TO's in the correct order.
 ;;
-;; plus-is-commutative            (Pi ([n Nat] [m Nat])             (= Nat   (+ m n)         (+ n m)             ))
-;; plus-has-an-additive-identity  (Sigma ([zro Nat]) (Pi ([n Nat])  (= Nat   (+ zro n)       n                   )))
-;; plus-is-associative            (Pi ([a Nat] [b Nat] [c Nat])     (= Nat   (+ (+ a b) c)   (+ a (+ b c))       ))
-;; distributivity                 (Pi ([a Nat] [b Nat] [c Nat])     (= Nat   (* (+ a b) c)   (+ (* a c) (* b c)) ))
-;; mult-has-an-identity           (Sigma ([one Nat]) (Pi ([n Nat])  (= Nat   (* one n)       n                   )))
-;; mult-is-associative            (Pi ([a Nat] [b Nat] [c Nat])     (= Nat   (* (* a b) c)   (* a (* b c))       ))
-;; mult-is-commutative            (Pi ([n Nat] [m Nat])             (= Nat   (* m n)         (* n m)             ))
+;; plus-is-commutative                 (Pi ([n Nat] [m Nat])                  (= Nat   (+ m n)        (+ n m)             ))
+;; plus-has-an-identity (Sigma ([zro Nat]) (Pi ([n Nat])                          (= Nat   (+ zro n)      n                   )))
+;; plus-is-associative                 (Pi ([a Nat] [b Nat] [c Nat])          (= Nat   (+ (+ a b) c)  (+ a (+ b c))       ))
+;; distributivity                      (Pi ([a Nat] [b Nat] [c Nat])          (= Nat   (* (+ a b) c)  (+ (* a c) (* b c)) ))
+;; mult-has-an-identity (Sigma ([one Nat]) (Pi ([n Nat])                          (= Nat   (* one n)      n                   )))
+;; mult-is-associative                 (Pi ([a Nat] [b Nat] [c Nat])          (= Nat   (* (* a b) c)  (* a (* b c))       ))
+;; mult-is-commutative                 (Pi ([n Nat] [m Nat])                  (= Nat   (* m n)        (* n m)             ))
+;;
+;; left-cancellation-for-plus          (Pi ([a Nat] [b Nat] [c Nat])     (-> (= Nat (+ a b) (+ a c)) (= Nat b c)))
+;; right-cancellation-for-plus         (Pi ([a Nat] [b Nat] [c Nat])     (-> (= Nat (+ b a) (+ c a)) (= Nat b c)))
+;; uniqueness-of-additive-identity     (Pi ([m Nat])                     (-> (Sigma ([n Nat]) (= Nat (+ m (+ 1 n)) (+ 1 n))) 
+;;                                                                          (= Nat m zero))))
 
 ;; Now let's prove that + is commutative
 ;; i.e. that (+ n m) *equals* (+ m n)
@@ -109,11 +115,11 @@
      base-plus-is-commutative
      step-plus-is-commutative)))
 
-(claim plus-has-an-additive-identity
+(claim plus-has-an-identity
   (Sigma ([zro Nat])
     (Pi ([n Nat])
       (= Nat (+ zro n) n))))
-(define plus-has-an-additive-identity
+(define plus-has-an-identity
   (cons zero
     (lambda (n) (same n))))
 
@@ -343,3 +349,64 @@
       mot-mult-is-commutative
       base-mult-is-commutative
       step-mult-is-commutative)))
+
+(claim step-left-cancellation-for-plus
+  (Pi ([b Nat] [c Nat])
+    (Pi ([n Nat])
+      (-> (-> (= Nat (+      n  b) (+      n  c)) (= Nat b c))
+          (-> (= Nat (+ (+ 1 n) b) (+ (+ 1 n) c)) (= Nat b c))))))
+(define step-left-cancellation-for-plus
+  (lambda (b c)
+    (lambda (n)
+      (lambda (casen->b=c)
+        (lambda (case-n+1)
+          (casen->b=c
+            (use-Nat (add1 (+ n b)) (add1 (+ n c))
+              (replace (plus-is-associative 1 n c) ;; the value of the replace expression is of type (= Nat (+ 1 (+ n b)) (+ 1 (+ n c)))
+                (lambda (exp) (= Nat (+ 1 (+ n b)) exp))
+                (replace (plus-is-associative 1 n b)
+                  (lambda (exp) (= Nat exp (+ (+ 1 n) c)))
+                  case-n+1))
+              )))))))
+
+(claim left-cancellation-for-plus
+  (Pi ([a Nat] [b Nat] [c Nat])
+    (-> (= Nat (+ a b) (+ a c))
+        (= Nat      b       c))))
+;; induct on a
+(define left-cancellation-for-plus
+  (lambda (a b c)
+    (ind-Nat a
+      (lambda (n) (-> (= Nat (+ n b) (+ n c)) (= Nat b c)))
+      (lambda (0+b=0+c) 0+b=0+c)
+      (step-left-cancellation-for-plus b c))))
+
+(claim right-cancellation-for-plus
+  (Pi ([a Nat] [b Nat] [c Nat])
+    (-> (= Nat (+ b a) (+ c a))
+        (= Nat    b       c   ))))
+(define right-cancellation-for-plus
+  (lambda (a b c)
+    (lambda (b+a=c+a)
+      (left-cancellation-for-plus a b c
+        (replace (plus-is-commutative a c)
+          (lambda (nn) (= Nat (+ a b) nn))
+          (replace (plus-is-commutative a b)
+            (lambda (nn) (= Nat nn (+ c a)))
+            b+a=c+a))))))
+
+(claim uniqueness-of-additive-identity
+  (Pi ([m Nat])
+    (-> (Sigma ([n Nat]) (= Nat (+ m n) n))
+        (= Nat m zero))))
+;;
+;; man, I wish I had a let binding for 'car exists-n-st-m+n=n'.
+;;
+(define uniqueness-of-additive-identity
+  (lambda (m)
+    (lambda (exists-n-st-m+n=n)
+      (right-cancellation-for-plus (car exists-n-st-m+n=n) m 0
+        (replace (the (= Nat (car exists-n-st-m+n=n) (+ 0 (car exists-n-st-m+n=n))) (same (car exists-n-st-m+n=n)))
+          (lambda (exp) (= Nat (+ m (car exists-n-st-m+n=n)) exp))
+          (cdr exists-n-st-m+n=n))))))
+
