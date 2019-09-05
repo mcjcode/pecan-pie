@@ -1,0 +1,11 @@
+;;
+;; For a type X, an inhabitant of 'Dec X'
+;; proves that X is decidable (i.e. it is
+;; either a proof of X or a proof of
+;; (X -> Absurd).
+;;
+(claim Dec
+  (Pi ([X]) U)
+(define Dec
+  (lambda (X)
+    (Either X (-> X Absurd))))
