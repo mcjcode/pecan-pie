@@ -1,0 +1,17 @@
+@(include "nats.raw")            ;; range
+@(include "13_even_or_odd.raw")  ;; all-nats-are-even-or-odd
+@(include "list_funcs.raw")      ;; filter, Thumb, thumbs-up, thumbs-down
+@(include "list_to_vec.raw")     ;; vec->list
+
+(claim even?
+  (-> Nat Thumb))
+(define even?
+  (lambda (n)
+    (ind-Either (all-nats-are-even-or-odd n)
+      (lambda (_eith) Thumb)
+      (lambda (lft) thumbs-up)
+      (lambda (rgt) thumbs-down))))
+
+(filter Nat even?
+  (vec->list Nat 100
+    (range 100)))
