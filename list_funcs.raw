@@ -1,0 +1,42 @@
+@(include "list.raw")
+@(include "14_maybe_and_finite.raw")
+
+(claim foldl
+  (Pi ([E U] [F U] [func (-> E F F)] [basef F] [es (List E)] )
+    F))
+(define foldl
+  (lambda (E F func basef es)
+    (ind-List es
+      (lambda (xs) F) ;; the mot
+      basef
+      (lambda (x xs sofar) (func x sofar)))))
+
+(claim map
+  (Pi ([E U] [F U] [func (-> E F)] [es (List E)])
+    (List F)))
+(define map
+  (lambda (E F func es)
+    (foldl E (List F) (lambda (e fs) (:: (func e) fs)) (the (List F) nil) es)))
+
+(claim filter
+  (Pi ([E U])
+    (-> (-> E Thumb)
+        (List E)
+        (List E))))
+(define filter
+  (lambda (E)
+    (lambda (func es)
+      (foldl E
+        (List E)
+        (lambda (e sofar)
+          (append E
+            (ind-Either (func e)
+              (lambda (_) (List E)) ;; the mot
+              (lambda (_lft) (the (List E) nil))
+              (lambda (_rgt) (:: e nil)))
+            sofar))
+        (the (List E) nil)
+        es))))
+
+;; (map Nat Nat (lambda (n) (add1 (add1 n))) (:: 0 (:: 1 (:: 2 (:: 3 nil)))))
+
