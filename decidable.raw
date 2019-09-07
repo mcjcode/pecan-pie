@@ -5,7 +5,48 @@
 ;; (X -> Absurd).
 ;;
 (claim Dec
-  (Pi ([X]) U)
+  (Pi ([X U]) U))
 (define Dec
   (lambda (X)
     (Either X (-> X Absurd))))
+
+;; the principle of excluded middle says
+;; that all propositions are decidable.
+;;
+;; We can't prove it, but we can state it.
+(claim Pem
+  (Pi ([X U])
+    (Dec X)))
+
+;; double negative elimination
+(claim Dne
+  (Pi ([X U])
+    (-> (-> (-> X Absurd)
+            Absurd)
+        X)))
+
+;; now let's see if we can prove that
+;; pem implies dne.  Actually this
+;; statement looks slightly different
+;; than that one.
+
+;; in English - if a type X is decidable,
+;; then if X is not false, it is true.
+(claim pem-implies-dne
+  (Pi ([X U])
+    (-> (Dec X)
+        (-> (-> (-> X Absurd)
+                Absurd)
+            X))))
+(define pem-implies-dne
+  (lambda (X)
+    (lambda (x-or-notx)
+      (lambda (not-notx) ;; if given an  notx : X->Absurd, it returns Absurd
+        (ind-Either x-or-notx
+          (lambda (_) X)
+          (lambda (lft) lft) ;; lft is an  x : X
+          (lambda (rgt)      ;; rgt is a notx : X -> Absurd
+            (ind-Absurd (not-notx rgt)
+              X)))))))
+
+
