@@ -1,0 +1,123 @@
+(claim x-implies-x-and-x
+  (Pi ([X U])
+    (-> X (Pair X X))))
+;; the proof below feels like
+;; the only one available.
+(define x-implies-x-and-x
+  (lambda (X)
+    (lambda (x)
+      (cons x x))))
+
+(claim x-and-x-implies-x
+  (Pi ([X U])
+    (-> (Pair X X)
+        X)))
+;; note that we can replace 'car'
+;; with 'cdr' in the proof below
+(define x-and-x-implies-x
+  (lambda (X)
+    (lambda (x-and-x)
+      (car x-and-x))))
+
+(claim Iff
+  (Pi ([X U] [Y U])
+    U))
+(define Iff
+  (lambda (X Y)
+    (Pair (-> X Y)
+          (-> Y X))))
+
+(claim x-iff-x
+  (Pi ([X U])
+    (Iff X X)))
+(define x-iff-x
+  (lambda (X)
+    (cons (lambda (x) x)
+          (lambda (x) x))))
+
+(claim x-iff-x-and-x
+  (Pi ([X U])
+    (Iff X (Pair X X))))
+(define x-iff-x-and-x
+  (lambda (X)
+    (cons (x-implies-x-and-x X) (x-and-x-implies-x X))))
+
+;; examples of type equalities
+(claim the-type-absurd-equals-itself
+  (= U Absurd Absurd))
+(define the-type-absurd-equals-itself
+  (same Absurd))
+
+(claim the-type-trivial-equals-itself
+  (= U Trivial Trivial))
+(define the-type-trivial-equals-itself
+  (same Trivial))
+
+;; now we've already established that
+;; for any type X, we have that X and
+;; X And X are logically equivalent.
+;;
+;; But are they equal?  Try executing this:
+;;
+;; (claim x-equals-x-and-x
+;;   (Pi ([X U])
+;;     (= U X (Pair X X))))
+;; (define x-equals-x-and-x
+;;   (lambda (X)
+;;     (same X)))
+;;
+;; and you'll get
+;;
+;; The expressions
+;;   (Pair X X)
+;; and X are not the same U 
+;;
+;; And clearly, the types 'X' and 'Pair X X'
+;; don't feel the same, i.e. if X were replaced
+;; by Nat.
+
+(claim Iso
+  (Pi ([X U] [Y U])
+    U))
+(define Iso
+  (lambda (X Y)
+    (Sigma ([f (-> X Y)]  ;; note that we have two 'dependees'
+        [g (-> Y X)]) ;; here, so really, nested Sigma-expressions
+      (Pair (Pi ([x X]) (= X x (g (f x))))
+            (Pi ([y Y]) (= Y y (f (g y))))))))
+
+;; X is isomorphic to X
+(claim X-iso-X
+  (Pi ([X U])
+    (Iso X X)))
+(define X-iso-X
+  (lambda (X)
+    (cons (lambda (x) x)
+          (cons (lambda (x) x)
+                (cons (lambda (x) (same x))
+                      (lambda (x) (same x)))))))
+
+;; This only seems reasonable.  But is it true?
+;; Yes it is.
+(claim equal-implies-isomorphic
+  (Pi ([X U] [Y U])
+    (-> (= U X Y)
+        (Iso X Y))))
+(define equal-implies-isomorphic
+  (lambda (X Y)
+    (lambda (X-equals-Y)
+      (replace X-equals-Y
+        (lambda (Z) (Iso X Z))
+        (X-iso-X X)))))
+
+(claim isomorphic-implies-iff
+  (Pi ([X U] [Y U])
+    (-> (Iso X Y)
+        (Iff X Y))))
+(define isomorphic-implies-iff
+  (lambda (X Y)
+    (lambda (x-and-y-are-iso)
+      (cons (car x-and-y-are-iso)
+            (car (cdr x-and-y-are-iso))))))
+      
+      
