@@ -1,0 +1,42 @@
+(claim DeMorgansFirstLaw
+  (Pi ((X U) (Y U))
+    (-> (-> (Either X Y) Absurd)
+        (Pair (-> X Absurd) (-> Y Absurd)))))
+
+(define DeMorgansFirstLaw
+  (lambda (X Y)
+    (lambda (not-xory) ;; not-xory is a function from (Either X Y) to Absurd
+      (cons (lambda (x) (not-xory (left x)))
+            (lambda (y) (not-xory (right y)))))))
+
+(claim DeMorgansFirstLawConverse
+  (Pi ((X U) (Y U))
+    (-> (Pair (-> X Absurd) (-> Y Absurd))
+        (-> (Either X Y) Absurd))))
+(define DeMorgansFirstLawConverse
+  (lambda (X Y)
+    (lambda (notx-and-noty)
+      (lambda (x-or-y)
+        (ind-Either x-or-y
+          (lambda (_) Absurd)
+          (lambda (x) ((car notx-and-noty) x))
+          (lambda (y) ((cdr notx-and-noty) y)))))))
+
+(claim DeMorgansSecondLaw
+  (Pi ((X U) (Y U))
+    (-> (-> (Pair X Y) Absurd)
+        (Either (-> X Absurd) (-> Y Absurd)))))
+
+(claim DeMorgansSecondLawConverse
+  (Pi ((X U) (Y U))
+    (-> (Either (-> X Absurd) (-> Y Absurd))
+        (-> (Pair X Y) Absurd))))
+
+(define DeMorgansSecondLawConverse
+  (lambda (X Y)
+    (lambda (notx-or-noty)
+      (lambda (x-and-y)
+        (ind-Either notx-or-noty
+          (lambda (_) Absurd)
+          (lambda (notx) (notx (car x-and-y)))
+          (lambda (noty) (noty (cdr x-and-y))))))))
