@@ -1,0 +1,93 @@
+;;
+;; here we give code to decide whether
+;; two Nats are equal.
+;;
+
+@(include "consequences.raw") ;; to get use-Nat
+@(include "decidable.raw")    ;; to get Dec
+
+;; recall what use-Nat gives us.  When provided
+;; with two Nats m and n and evidence that they
+;; are equal (i.e. something of type (= Nat m n))
+;; it gives us evidence of a consequence:
+
+;;         n
+;;         0          >0
+;; m  0    Trivial    Absurd
+;;
+;;   >0    Absurd     (= Nat m-1 n-1)
+
+
+;; start small.  let's first show that it is
+;; decidable whether a Nat is zero.
+
+(claim zero?
+  (Pi ((n Nat))
+    (Dec (= Nat 0 n))))
+;;    (Either (= Nat 0 n)
+;;            (-> (= Nat 0 n) Absurd))))
+(define zero?
+  (lambda (n)
+    (ind-Nat n
+      (lambda (n) (Dec (= Nat 0 n))) ;; the mot
+      (left (same 0))             ;; the base
+      (lambda (n-1 _) (right (use-Nat 0 (add1 n-1)))))))
+
+'is-zero-zero
+(zero? 0)
+;; this evaluates to evidence of (= Nat 0 0)
+
+'is-one-zero
+(zero? 1)
+;; this evaluates to evidence that (= Nat 0 1) -> Absurd
+
+
+(claim incr
+  (-> Nat Nat))
+(define incr
+  (lambda (n) (add1 n)))
+
+(claim step-decide-nat=
+  (Pi ((m-1 Nat))
+    (-> (Pi ((j Nat)) (Dec (= Nat       m-1  j)))
+        (Pi ((j Nat)) (Dec (= Nat (add1 m-1) j))))))
+(define step-decide-nat=
+  (lambda (m-1 step-m-1)
+    (lambda (j)
+      (ind-Nat j
+        (lambda (j) (Dec (= Nat (add1 m-1) j)))
+        (right (use-Nat (add1 m-1) zero))
+        ;;
+        ;; This step requires a
+        ;;
+        ;; (Pi ((j-1 Nat))
+        ;;    (Dec (= Nat (add1 m-1)       j-1 ))
+        ;;    (Dec (= Nat (add1 m-1) (add1 j-1)))
+        ;;
+        (lambda (j-1 _)
+          (ind-Either (step-m-1 j-1)
+            (lambda (eq-or-not-eq) (Dec (= Nat (add1 m-1) (add1 j-1))))
+            (lambda (lft) (left (cong lft incr)))
+            ;; I have rgt, evidence that (-> (= Nat m-1 j-1) Absurd)
+            ;; now I want evidence that (-> (= Nat (add1 m-1) (add1 j-1)) Absurd) too.
+            ;;
+            ;; compose use-Nat with rgt:
+            ;;
+            (lambda (rgt) (right (lambda (add1m-1=add1j-1)
+                              (rgt (use-Nat (add1 m-1) (add1 j-1) add1m-1=add1j-1))) ) )))))))
+
+(claim decide-nat=
+  (Pi ((m Nat) (n Nat))
+    (Dec (= Nat m n))))
+(define decide-nat=
+  (lambda (m n)
+    ((ind-Nat m
+       (lambda (m) (Pi ((j Nat)) (Dec (= Nat m j))))  ;; the step
+       zero?                                    ;; the base
+       step-decide-nat=)
+     n)))
+
+  
+;; (decide-nat= 3 7)
+
+;; (decide-nat= 2 2)
