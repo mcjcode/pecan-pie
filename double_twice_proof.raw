@@ -27,14 +27,14 @@
      (= Nat (add1 (+ m n)) (+ m (add1 n)))))
 
 (claim base-add1+=+add1
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (= Nat (add1 (+ 0 n)) (+ 0 (add1 n)))))
 (define base-add1+=+add1
   (lambda (n)
     (same (add1 n))))
 
 (claim step-add1+=+add1
-  (Pi ([n Nat] [m Nat])
+  (Pi ((n Nat) (m Nat))
       (-> (= Nat (add1 (+       m  n)) (+       m  (add1 n)))
           (= Nat (add1 (+ (add1 m) n)) (+ (add1 m) (add1 n))))))
 (define step-add1+=+add1
@@ -43,7 +43,7 @@
      (cong casem (+ 1)))))
 
 (claim add1+=+add1
- (Pi ([n Nat] [m Nat])
+ (Pi ((n Nat) (m Nat))
      (= Nat (add1 (+ m n)) (+ m (add1 n)))))
 (define add1+=+add1
   (lambda (n m)
@@ -53,7 +53,7 @@
       (step-add1+=+add1 n))))
 
 (claim mot-double=twice
- (Pi ([n Nat]) U))
+ (Pi ((n Nat)) U))
 (define mot-double=twice
  (lambda (n) (= Nat (double n) (twice n))))
 
@@ -67,7 +67,7 @@
 ;;               same as  (cong (= Nat (+ n (add1 n)) (add1 (twice n))) (+ 1))
 ;;               same as  (cong (= Nat (add1 (+ n n)) (add1 (twice n))) (+ 1))
 (claim step-double=twice
- (Pi ([n Nat])
+ (Pi ((n Nat))
      (-> (= Nat (double       n ) (twice       n ))
          (= Nat (double (add1 n)) (twice (add1 n))))))
 (define step-double=twice
@@ -76,7 +76,7 @@
        (cong (trans (symm (add1+=+add1 n n)) (cong almost (+ 1))) (+ 1)))))
 
 (claim double=twice
- (Pi ([n Nat])
+ (Pi ((n Nat))
   (= Nat (double n) (twice n))))
 (define double=twice
   (lambda (n)

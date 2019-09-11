@@ -10,7 +10,7 @@
        (+ 2))))
 
 (claim mot-double-Vec
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
       U))
 (define mot-double-Vec
   (lambda (E n)
@@ -18,7 +18,7 @@
         (Vec E (double n)))))
 
 (claim base-double-Vec
-  (Pi ([E U])
+  (Pi ((E U))
     (-> (Vec E 0)
         (Vec E 0))))
 (define base-double-Vec
@@ -26,7 +26,7 @@
     vecnil))
 
 (claim step-double-Vec
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     (-> (-> (Vec E n) (Vec E (double n)))
         (-> (Vec E (add1 n)) (Vec E (double (add1 n)))))))
 (define step-double-Vec
@@ -36,7 +36,7 @@
         (casen (tail vs))))))
 
 (claim double-Vec
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     (-> (Vec E n)
         (Vec E (double n)))))
 (define double-Vec
@@ -74,14 +74,14 @@
      (= Nat (add1 (+ m n)) (+ m (add1 n)))))
 
 (claim base-add1+=+add1
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (= Nat (add1 (+ 0 n)) (+ 0 (add1 n)))))
 (define base-add1+=+add1
   (lambda (n)
     (same (add1 n))))
 
 (claim step-add1+=+add1
-  (Pi ([n Nat] [m Nat])
+  (Pi ((n Nat) (m Nat))
       (-> (= Nat (add1 (+       m  n)) (+       m  (add1 n)))
           (= Nat (add1 (+ (add1 m) n)) (+ (add1 m) (add1 n))))))
 (define step-add1+=+add1
@@ -90,7 +90,7 @@
      (cong casem (+ 1)))))
 
 (claim add1+=+add1
- (Pi ([n Nat] [m Nat])
+ (Pi ((n Nat) (m Nat))
      (= Nat (add1 (+ m n)) (+ m (add1 n)))))
 (define add1+=+add1
   (lambda (n m)
@@ -100,7 +100,7 @@
       (step-add1+=+add1 n))))
 
 (claim mot-double=twice
- (Pi ([n Nat]) U))
+ (Pi ((n Nat)) U))
 (define mot-double=twice
  (lambda (n) (= Nat (double n) (twice n))))
 
@@ -121,7 +121,7 @@
              k))))
 
 (claim step-double=twice
- (Pi ([n Nat])
+ (Pi ((n Nat))
      (-> (= Nat (double       n ) (twice       n ))
          (= Nat (double (add1 n)) (twice (add1 n))))))
 (define step-double=twice
@@ -133,7 +133,7 @@
         (cong pn (+ 2)))))) ;; the base
 
 (claim double=twice
- (Pi ([n Nat])
+ (Pi ((n Nat))
   (= Nat (double n) (twice n))))
 (define double=twice
   (lambda (n)
@@ -143,7 +143,7 @@
              step-double=twice)))
 
 (claim twice-Vec
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     (-> (Vec E n)
         (Vec E (twice n)))))
 (define twice-Vec

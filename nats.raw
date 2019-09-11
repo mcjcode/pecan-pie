@@ -53,14 +53,14 @@
 ;; c + (a*c) == (1+a) * c (are they the same?)
 ;;
 (claim test-*
-  (Pi ([a Nat] [c Nat])
+  (Pi ((a Nat) (c Nat))
     (= Nat (+ c (* a c)) (* (+ 1 a) c))))
 (define test-*
   (lambda (a c)
     (same (+ c (* a c)))))
 
 ;; (claim step-*
-;;   (Pi ([n Nat])
+;;   (Pi ((n Nat))
 ;;     (-> (-> Nat Nat)
 ;;         (-> Nat Nat))))
 
@@ -95,7 +95,7 @@
   (the (Vec Nat zero) vecnil))
 
 (claim step-range
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (mot-range n)             ;; (Vec Nat       n )
         (mot-range (add1 n)))))   ;; (Vec Nat (add1 n))
 (define step-range
@@ -104,7 +104,7 @@
       (vec:: (add1 n) casen))))
 
 (claim range
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (Vec Nat n)))
 (define range
   (lambda (n)

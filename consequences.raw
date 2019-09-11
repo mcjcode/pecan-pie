@@ -43,7 +43,7 @@
 ;; an actual value (the non-Absurd cases)
 ;;
 (claim consequence-same
-  (Pi ([m Nat]) (Consequences=Nat m m)))
+  (Pi ((m Nat)) (Consequences=Nat m m)))
 (define consequence-same
   (lambda (m)
     ;; can't use which-Nat here, because I have to specify
@@ -58,7 +58,7 @@
 
 ;; now we use 'replace' to do the general case.
 (claim use-Nat ;; what's a good name for this?  I don't get what 'use-Nat' signifies
-  (Pi ([m Nat] [n Nat])
+  (Pi ((m Nat) (n Nat))
        (-> (= Nat m n)               ;; if someone gives us evidence that m equals n
            (Consequences=Nat m n)))) ;; then we give them evidence of our proposed Consequence.
 (define use-Nat

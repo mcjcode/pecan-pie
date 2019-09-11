@@ -19,7 +19,7 @@
 ;; (range 2)
 
 (claim mot-sum-Nats
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (Vec Nat n)
       U)))
 (define mot-sum-Nats
@@ -27,7 +27,7 @@
     Nat))
 
 (claim step-sum-Nats
-  (Pi ([n Nat] [v Nat] [vs (Vec Nat n)])
+  (Pi ((n Nat) (v Nat) (vs (Vec Nat n)))
     (-> (mot-sum-Nats       n           vs )    ;; Vec Nat n
         (mot-sum-Nats (add1 n) (vec:: v vs))))) ;; Vec Nat (add1 n)
 (define step-sum-Nats
@@ -36,7 +36,7 @@
       (+ v x))))
 
 (claim sum-Nats
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (Vec Nat n)
       Nat)))
 (define sum-Nats
@@ -45,7 +45,7 @@
       (ind-Vec n
          vs
          mot-sum-Nats
-         zero     ;; the base. "sum []"
+         zero     ;; the base. "sum ()"
          step-sum-Nats)))) ;; step
 
 
@@ -60,7 +60,7 @@
 (gauss-naive 100) ;; (the Nat 5050)
 
 (claim mot-gauss-legend
-  (Pi ([n Nat]) U))
+  (Pi ((n Nat)) U))
 (define mot-gauss-legend
   (lambda (n)
     (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))))
@@ -71,7 +71,7 @@
   (same zero))
 
 (claim step-gauss-legend
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (mot-gauss-legend n) ;; (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))
       (mot-gauss-legend (add1 n)))))
 ;;
@@ -99,7 +99,7 @@
              
 ;; now for the 'gauss' theorem
 (claim gauss-legend
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (= Nat (* 2 (sum-Nats n (range n))) (* (add1 n) n))))
 (define gauss-legend
   (lambda (n)

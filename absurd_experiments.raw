@@ -4,7 +4,7 @@
   (lambda (impossible) zero))
 
 (claim test2
-  (Pi ([E U])
+  (Pi ((E U))
     (-> Absurd E)))
 (define test2
   (lambda (E)

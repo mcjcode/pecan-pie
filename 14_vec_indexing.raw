@@ -4,7 +4,7 @@
 ;; as indexes for like sized vectors
 
 (claim mot-vec-index
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     U))
 (define mot-vec-index
   (lambda (E)
@@ -12,7 +12,7 @@
       (-> (Vec E n) (Fin n) E))))
 
 (claim base-vec-index
-  (Pi ([E U])
+  (Pi ((E U))
     (-> (Vec E zero) (Fin zero) E)))
 (define base-vec-index
   (lambda (E)
@@ -20,7 +20,7 @@
       (ind-Absurd fz E))))
 
 (claim step-vec-index
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     (-> (-> (Vec E       n ) (Fin       n ) E)
         (-> (Vec E (add1 n)) (Fin (add1 n)) E))))
 (define step-vec-index
@@ -33,7 +33,7 @@
           (lambda (rgt) (casen (tail vec) rgt)))))))
 
 (claim vec-index
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     (-> (Vec E n) (Fin n) E)))
 (define vec-index
   (lambda (E n)

@@ -5,17 +5,17 @@
 ;; the exact types so that we get the FROM's and
 ;; TO's in the correct order.
 ;;
-;; plus-is-commutative                 (Pi ([n Nat] [m Nat])                  (= Nat   (+ m n)        (+ n m)             ))
-;; plus-has-an-identity (Sigma ([zro Nat]) (Pi ([n Nat])                          (= Nat   (+ zro n)      n                   )))
-;; plus-is-associative                 (Pi ([a Nat] [b Nat] [c Nat])          (= Nat   (+ (+ a b) c)  (+ a (+ b c))       ))
-;; distributivity                      (Pi ([a Nat] [b Nat] [c Nat])          (= Nat   (* (+ a b) c)  (+ (* a c) (* b c)) ))
-;; mult-has-an-identity (Sigma ([one Nat]) (Pi ([n Nat])                          (= Nat   (* one n)      n                   )))
-;; mult-is-associative                 (Pi ([a Nat] [b Nat] [c Nat])          (= Nat   (* (* a b) c)  (* a (* b c))       ))
-;; mult-is-commutative                 (Pi ([n Nat] [m Nat])                  (= Nat   (* m n)        (* n m)             ))
+;; plus-is-commutative                 (Pi ((n Nat) (m Nat))                  (= Nat   (+ m n)        (+ n m)             ))
+;; plus-has-an-identity (Sigma ((zro Nat)) (Pi ((n Nat))                          (= Nat   (+ zro n)      n                   )))
+;; plus-is-associative                 (Pi ((a Nat) (b Nat) (c Nat))          (= Nat   (+ (+ a b) c)  (+ a (+ b c))       ))
+;; distributivity                      (Pi ((a Nat) (b Nat) (c Nat))          (= Nat   (* (+ a b) c)  (+ (* a c) (* b c)) ))
+;; mult-has-an-identity (Sigma ((one Nat)) (Pi ((n Nat))                          (= Nat   (* one n)      n                   )))
+;; mult-is-associative                 (Pi ((a Nat) (b Nat) (c Nat))          (= Nat   (* (* a b) c)  (* a (* b c))       ))
+;; mult-is-commutative                 (Pi ((n Nat) (m Nat))                  (= Nat   (* m n)        (* n m)             ))
 ;;
-;; left-cancellation-for-plus          (Pi ([a Nat] [b Nat] [c Nat])     (-> (= Nat (+ a b) (+ a c)) (= Nat b c)))
-;; right-cancellation-for-plus         (Pi ([a Nat] [b Nat] [c Nat])     (-> (= Nat (+ b a) (+ c a)) (= Nat b c)))
-;; uniqueness-of-additive-identity     (Pi ([m Nat])                     (-> (Sigma ([n Nat]) (= Nat (+ m (+ 1 n)) (+ 1 n))) 
+;; left-cancellation-for-plus          (Pi ((a Nat) (b Nat) (c Nat))     (-> (= Nat (+ a b) (+ a c)) (= Nat b c)))
+;; right-cancellation-for-plus         (Pi ((a Nat) (b Nat) (c Nat))     (-> (= Nat (+ b a) (+ c a)) (= Nat b c)))
+;; uniqueness-of-additive-identity     (Pi ((m Nat))                     (-> (Sigma ((n Nat)) (= Nat (+ m (+ 1 n)) (+ 1 n))) 
 ;;                                                                          (= Nat m zero))))
 
 ;; Now let's prove that + is commutative
@@ -25,7 +25,7 @@
 ;; at each n-step we will have to induct
 ;; on m.
 (claim mot-plus-is-commutative-part1
- (Pi ([m Nat]) U))
+ (Pi ((m Nat)) U))
 (define mot-plus-is-commutative-part1  
  (lambda (m) (= Nat (+ m 0) (+ 0 m))))
   
@@ -35,7 +35,7 @@
  (same 0))
 
 (claim step-plus-is-commutative-part1
- (Pi ([m-1 Nat])
+ (Pi ((m-1 Nat))
   (-> (= Nat (+       m-1  0) (+ 0       m-1))
       (= Nat (+ (add1 m-1) 0) (+ 0 (add1 m-1))))))
 (define step-plus-is-commutative-part1
@@ -44,7 +44,7 @@
    (cong casem-1 (+ 1)))))
 
 (claim plus-is-commutative-part1
- (Pi ([m Nat]) ;; note that square brackets here work too.
+ (Pi ((m Nat)) ;; note that square brackets here work too.
   (= Nat (+ m 0) (+ 0 m))))
 (define plus-is-commutative-part1
  (lambda (m)
@@ -54,29 +54,29 @@
            step-plus-is-commutative-part1)))
 
 (claim mot-plus-is-commutative
- (Pi ([n Nat])
+ (Pi ((n Nat))
      U))
 (define mot-plus-is-commutative
   (lambda (n)
-    (Pi ([m Nat])
+    (Pi ((m Nat))
       (= Nat (+ m n) (+ n m)))))
 
 (claim base-plus-is-commutative
- (Pi ([m Nat])
+ (Pi ((m Nat))
   (= Nat (+ m 0) (+ 0 m))))
 (define base-plus-is-commutative
   plus-is-commutative-part1)
 
 
 (claim step-plus-is-commutative
-       (Pi ([n Nat])
-           (-> (Pi ([m Nat])
+       (Pi ((n Nat))
+           (-> (Pi ((m Nat))
                    (= Nat (+ m       n ) (+       n  m)))
-               (Pi ([m Nat])
+               (Pi ((m Nat))
                    (= Nat (+ m (+ 1 n)) (+ (+ 1 n) m))))))
 (define step-plus-is-commutative
   (lambda (n)
-    (lambda (casen) ;; casen is a (Pi ([m]) (= Nat (+ m n) (+ n m))) "any m commutes with n" (1)
+    (lambda (casen) ;; casen is a (Pi ((m)) (= Nat (+ m n) (+ n m))) "any m commutes with n" (1)
        (lambda (m)
          (ind-Nat m
            (lambda (m+1) (= Nat (+ m+1 (+ 1 n)) (+ (+ 1 n) m+1))) ;; the motive
@@ -106,7 +106,7 @@
 
 
 (claim plus-is-commutative
- (Pi ([n Nat] [m Nat])
+ (Pi ((n Nat) (m Nat))
   (= Nat (+ m n) (+ n m))))
 (define plus-is-commutative
  (lambda (n)
@@ -116,29 +116,29 @@
      step-plus-is-commutative)))
 
 (claim plus-has-an-identity
-  (Sigma ([zro Nat])
-    (Pi ([n Nat])
+  (Sigma ((zro Nat))
+    (Pi ((n Nat))
       (= Nat (+ zro n) n))))
 (define plus-has-an-identity
   (cons zero
     (lambda (n) (same n))))
 
 (claim mot-plus-is-associative
-  (Pi ([b Nat] [c Nat] [a Nat])
+  (Pi ((b Nat) (c Nat) (a Nat))
     U))
 (define mot-plus-is-associative
   (lambda (b c)
     (lambda (a) (= Nat (+ (+ a b) c) (+ a (+ b c))))))
 
 (claim base-plus-is-associative
-  (Pi ([b Nat] [c Nat])
+  (Pi ((b Nat) (c Nat))
     (= Nat (+ (+ zero b) c) (+ zero (+ b c)))))
 (define base-plus-is-associative
   (lambda (b c)
     (same (+ b c))))
 
 (claim step-plus-is-associative
-  (Pi ([b Nat] [c Nat] [a Nat])
+  (Pi ((b Nat) (c Nat) (a Nat))
     (-> (= Nat (+ (+       a  b) c) (+       a  (+ b c)))
         (= Nat (+ (+ (add1 a) b) c) (+ (add1 a) (+ b c))))))
 (define step-plus-is-associative
@@ -148,7 +148,7 @@
         (cong casea (+ 1)))))) ;; honestly, I just guessed
 
 (claim plus-is-associative
-  (Pi ([a Nat] [b Nat] [c Nat])
+  (Pi ((a Nat) (b Nat) (c Nat))
     (= Nat (+ (+ a b) c) (+ a (+ b c)))))
 (define plus-is-associative
   (lambda (a b c)
@@ -158,25 +158,25 @@
         (step-plus-is-associative b c))))
 
 (claim mot-distributivity
-  (Pi ([a Nat])
+  (Pi ((a Nat))
       U))
 (define mot-distributivity
   (lambda (a)
-    (Pi ([b Nat] [c Nat])
+    (Pi ((b Nat) (c Nat))
       (= Nat (* (+ a b) c) (+ (* a c) (* b c))))))
 
 (claim base-distributivity
-  (Pi ([b Nat] [c Nat])
+  (Pi ((b Nat) (c Nat))
     (= Nat (* (+ zero b) c) (+ (* zero c) (* b c)))))
 (define base-distributivity
   (lambda (b c)
     (same (* b c))))
 
 (claim step-distributivity
-  (Pi ([a Nat])
-    (-> (Pi ([b Nat] [c Nat])
+  (Pi ((a Nat))
+    (-> (Pi ((b Nat) (c Nat))
             (= Nat (* (+       a  b) c) (+ (*       a  c) (* b c))))
-        (Pi ([b Nat] [c Nat])
+        (Pi ((b Nat) (c Nat))
             (= Nat (* (+ (add1 a) b) c) (+ (* (add1 a) c) (* b c)))))))
 ;; Here is the proof, in infix notation
 ;;
@@ -190,7 +190,7 @@
 ;;
 (define step-distributivity
   (lambda (a)
-    (lambda (casea) ;; a (Pi ([b Nat] [c Nat]) (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))))
+    (lambda (casea) ;; a (Pi ((b Nat) (c Nat)) (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))))
       (lambda (b c)
 ;;                          FROM                        TO                          Evidence
         (trans (the  (= Nat (* (+ (+ 1 a) b) c)         (* (+ (+ a 1) b) c))        (cong (plus-is-commutative a 1) (the (-> Nat Nat) (lambda (n) (* (+ n b) c))))  )
@@ -203,8 +203,8 @@
                ))))))))))
         
 (claim distributivity ;; ok, well, this is just left-distributivity.
-  (Pi ([a Nat])
-    (Pi ([b Nat] [c Nat])
+  (Pi ((a Nat))
+    (Pi ((b Nat) (c Nat))
      (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))) ;; (a+b)*c = (a*c)+(b*c)
 (define distributivity
   (lambda (a)
@@ -214,8 +214,8 @@
       step-distributivity)))
 
 (claim mult-has-an-identity
-  (Sigma ([one Nat])
-    (Pi ([n Nat])
+  (Sigma ((one Nat))
+    (Pi ((n Nat))
       (= Nat (* one n) n))))
 (define mult-has-an-identity
   (cons (add1 zero)
@@ -225,24 +225,24 @@
              (the   (= Nat (+ 0 n) n      )   (same n)))))))
 
 (claim mot-mult-is-associative
-  (Pi ([a Nat]) U))
+  (Pi ((a Nat)) U))
 (define mot-mult-is-associative
   (lambda (a)
-    (Pi ([b Nat] [c Nat])
+    (Pi ((b Nat) (c Nat))
       (= Nat (* (* a b) c) (* a (* b c))))))
 
 (claim base-mult-is-associative
-  (Pi ([b Nat] [c Nat])
+  (Pi ((b Nat) (c Nat))
     (= Nat (* (* zero b) c) (* zero (* b c)))))
 (define base-mult-is-associative
   (lambda (b c)
     (same zero)))
 
 (claim step-mult-is-associative
-  (Pi ([a Nat])
-    (-> (Pi ([b Nat] [c Nat])
+  (Pi ((a Nat))
+    (-> (Pi ((b Nat) (c Nat))
           (= Nat (* (*       a  b) c) (*       a  (* b c))))
-        (Pi ([b Nat] [c Nat])
+        (Pi ((b Nat) (c Nat))
             (= Nat (* (* (add1 a) b) c) (* (add1 a) (* b c)))))))
 ;;
 ;; Here is the proof, in infix notation:
@@ -276,8 +276,8 @@
                
 
 (claim mult-is-associative
-  (Pi ([a Nat])
-    (Pi ([b Nat] [c Nat])
+  (Pi ((a Nat))
+    (Pi ((b Nat) (c Nat))
       (= Nat (* (* a b) c) (* a (* b c))))))
 (define mult-is-associative
   (lambda (a)
@@ -287,15 +287,15 @@
       step-mult-is-associative)))
 
 (claim mot-mult-is-commutative
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     U))
 (define mot-mult-is-commutative
   (lambda (n)
-    (Pi ([m Nat])
+    (Pi ((m Nat))
       (= Nat (* m n) (* n m)))))
 
 (claim base-mult-is-commutative
-  (Pi ([m Nat])
+  (Pi ((m Nat))
     (= Nat (* m zero) (* zero m))))
 (define base-mult-is-commutative
   (lambda (m)
@@ -307,10 +307,10 @@
           (cong prevcase (+ zero)))))))
 
 (claim step-mult-is-commutative
-  (Pi ([n Nat])
-    (-> (Pi ([m Nat])
+  (Pi ((n Nat))
+    (-> (Pi ((m Nat))
             (= Nat (* m n) (* n m)))
-        (Pi ([m Nat])
+        (Pi ((m Nat))
             (= Nat (* m (+ 1 n)) (* (+ 1 n) m))))))
 (define step-mult-is-commutative
   (lambda (n)
@@ -341,7 +341,7 @@
                      ))))))))))))))))))
 
 (claim mult-is-commutative
-  (Pi ([n Nat] [m Nat])
+  (Pi ((n Nat) (m Nat))
     (= Nat (* m n) (* n m))))
 (define mult-is-commutative
   (lambda (n)
@@ -351,8 +351,8 @@
       step-mult-is-commutative)))
 
 (claim step-left-cancellation-for-plus
-  (Pi ([b Nat] [c Nat])
-    (Pi ([n Nat])
+  (Pi ((b Nat) (c Nat))
+    (Pi ((n Nat))
       (-> (-> (= Nat (+      n  b) (+      n  c)) (= Nat b c))
           (-> (= Nat (+ (+ 1 n) b) (+ (+ 1 n) c)) (= Nat b c))))))
 (define step-left-cancellation-for-plus
@@ -370,7 +370,7 @@
               )))))))
 
 (claim left-cancellation-for-plus
-  (Pi ([a Nat] [b Nat] [c Nat])
+  (Pi ((a Nat) (b Nat) (c Nat))
     (-> (= Nat (+ a b) (+ a c))
         (= Nat      b       c))))
 ;; induct on a
@@ -378,11 +378,11 @@
   (lambda (a b c)
     (ind-Nat a
       (lambda (n) (-> (= Nat (+ n b) (+ n c)) (= Nat b c)))
-      (lambda (0+b=0+c) 0+b=0+c)
+      (lambda (zero+b=zero+c) zero+b=zero+c)
       (step-left-cancellation-for-plus b c))))
 
 (claim right-cancellation-for-plus
-  (Pi ([a Nat] [b Nat] [c Nat])
+  (Pi ((a Nat) (b Nat) (c Nat))
     (-> (= Nat (+ b a) (+ c a))
         (= Nat    b       c   ))))
 (define right-cancellation-for-plus
@@ -396,8 +396,8 @@
             b+a=c+a))))))
 
 (claim uniqueness-of-additive-identity
-  (Pi ([m Nat])
-    (-> (Sigma ([n Nat]) (= Nat (+ m n) n))
+  (Pi ((m Nat))
+    (-> (Sigma ((n Nat)) (= Nat (+ m n) n))
         (= Nat m zero))))
 ;;
 ;; man, I wish I had a let binding for 'car exists-n-st-m+n=n'.

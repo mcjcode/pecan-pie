@@ -1,8 +1,8 @@
 (claim step-map-Vec
-  (Pi ([E U]
-       [F U]
-       [f (-> E F)]
-       [n Nat] [e E] [es (Vec E n)])
+  (Pi ((E U)
+       (F U)
+       (f (-> E F))
+       (n Nat) (e E) (es (Vec E n)))
     (-> (Vec F       n )
         (Vec F (add1 n)))))
 (define step-map-Vec
@@ -11,7 +11,7 @@
       (vec:: (f e) prevstep))))
           
 (claim map-Vec
-  (Pi ([E U] [F U] [f (-> E F)] [n Nat])
+  (Pi ((E U) (F U) (f (-> E F)) (n Nat))
     (-> (Vec E n)
         (Vec F n))))
 (define map-Vec

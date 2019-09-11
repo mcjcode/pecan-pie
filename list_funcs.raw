@@ -2,7 +2,7 @@
 @(include "14_maybe_and_finite.raw")
 
 (claim foldl
-  (Pi ([E U] [F U] [func (-> E F F)] [basef F] [es (List E)] )
+  (Pi ((E U) (F U) (func (-> E F F)) (basef F) (es (List E)) )
     F))
 (define foldl
   (lambda (E F func basef es)
@@ -12,14 +12,14 @@
       (lambda (x xs sofar) (func x sofar)))))
 
 (claim map
-  (Pi ([E U] [F U] [func (-> E F)] [es (List E)])
+  (Pi ((E U) (F U) (func (-> E F)) (es (List E)))
     (List F)))
 (define map
   (lambda (E F func es)
     (foldl E (List F) (lambda (e fs) (:: (func e) fs)) (the (List F) nil) es)))
 
 (claim filter
-  (Pi ([E U])
+  (Pi ((E U))
     (-> (-> E Thumb)
         (List E)
         (List E))))

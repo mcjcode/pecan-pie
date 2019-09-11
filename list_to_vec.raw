@@ -3,22 +3,22 @@
 ;; lists and turns them into ( n (Vec E n) ) pairs.
 ;;
 ;; (claim list->vec
-;;   (Pi ([E U])
+;;   (Pi ((E U))
 ;;     (-> (List E)
-;;         (Sigma ([n Nat])
+;;         (Sigma ((n Nat))
 ;;                (Vec E n)))))
 
 (claim base-list->vec
-  (Pi ([E U])
-    (Sigma ([n Nat]) (Vec E n))))
+  (Pi ((E U))
+    (Sigma ((n Nat)) (Vec E n))))
 (define base-list->vec
   (lambda (E)
     (cons 0 vecnil)))
 
 (claim step-list->vec
-  (Pi ([E U])
-    (-> E (List E) (Sigma ([n Nat]) (Vec E n))     ;; note how the last arg
-                   (Sigma ([n Nat]) (Vec E n)) ))) ;; and the result have the same type.
+  (Pi ((E U))
+    (-> E (List E) (Sigma ((n Nat)) (Vec E n))     ;; note how the last arg
+                   (Sigma ((n Nat)) (Vec E n)) ))) ;; and the result have the same type.
 (define step-list->vec
   (lambda (E)
     (lambda (e es almost)
@@ -26,9 +26,9 @@
             (vec:: e (cdr almost))))))
 
 (claim list->vec
-  (Pi ([E U])
+  (Pi ((E U))
     (-> (List E)
-        (Sigma ([n Nat])
+        (Sigma ((n Nat))
                (Vec E n)))))
 (define list->vec
   (lambda (E)
@@ -48,7 +48,7 @@
 ;; (list->vec Nat one-to-four)
 
 (claim length
-  (Pi ([E U])
+  (Pi ((E U))
     (-> (List E)
         Nat)))
 (define length
@@ -68,7 +68,7 @@
 ;; list into to type of the expression.
 ;;
 (claim step-list->vec-better
-  (Pi ([E U] [e E] [es (List E)])
+  (Pi ((E U) (e E) (es (List E)))
     (-> (Vec E (length E es))
         (Vec E (add1 (length E es))))))
 (define step-list->vec-better
@@ -77,8 +77,8 @@
       (vec:: e sofar))))
 
 (claim list->vec-better
-  (Pi ([E U])
-    (Pi ([es (List E)])
+  (Pi ((E U))
+    (Pi ((es (List E)))
       (Vec E (length E es)))))
 (define list->vec-better
   (lambda (E)
@@ -92,7 +92,7 @@
 ;; (list->vec-better Nat one-to-four)
 
 (claim mot-vec->list
-  (Pi ([E U] [k Nat])
+  (Pi ((E U) (k Nat))
     (-> (Vec E k) U)))
 (define mot-vec->list
   (lambda (E _)
@@ -100,14 +100,14 @@
       (List E))))
 
 (claim base-vec->list
-  (Pi ([E U])
+  (Pi ((E U))
     (List E)))
 (define base-vec->list
   (lambda (E)
     (the (List E) nil)))
 
 (claim step-vec->list
-  (Pi ([E U] [k Nat] [h E] [t (Vec E k)])
+  (Pi ((E U) (k Nat) (h E) (t (Vec E k)))
     (-> (List E)
         (List E))))
 (define step-vec->list
@@ -117,7 +117,7 @@
 
 ;; now let's do vec->list
 (claim vec->list
-  (Pi ([E U] [k Nat])
+  (Pi ((E U) (k Nat))
     (-> (Vec E k)
         (List E))))
 (define vec->list
@@ -138,7 +138,7 @@
 ;; list.
 
 (claim mot-list->vec->list=id
-  (Pi ([E U])
+  (Pi ((E U))
     (-> (List E) U)))
 (define mot-list->vec->list=id
   (lambda (E)
@@ -147,7 +147,7 @@
                                 (list->vec-better E es))))))
 
 (claim base-list->vec->list=id
-  (Pi ([E U])
+  (Pi ((E U))
     (= (List E) nil (vec->list E (length E nil)
                                  (list->vec-better E nil)))))
 (define base-list->vec->list=id
@@ -160,19 +160,19 @@
 ;;
 ;; Is something like this be true:
 ;;
-;; (Pi ([E U] [n Nat] [hd E] [tl (List E)])
+;; (Pi ((E U) (n Nat) (hd E) (tl (List E)))
 ;;     (check-same (Vec E n) (list->vec-better E (:: hd tl)) (vec:: hd (list->vec-better E tl))))
 ;;
 ;; yes it is!
 (claim list->vec->list=id-lemma1
-  (Pi ([E U] [hd E] [tl (List E)])
+  (Pi ((E U) (hd E) (tl (List E)))
     (= (Vec E (add1 (length E tl))) (vec:: hd (list->vec-better E tl)) (list->vec-better E (:: hd tl)))))
 (define list->vec->list=id-lemma1
   (lambda (E hd tl)
     (same (list->vec-better E (:: hd tl)))))
 
 (claim cons-list
-  (Pi ([E U])
+  (Pi ((E U))
     (-> E (List E)
         (List E))))
 (define cons-list
@@ -181,7 +181,7 @@
       (:: e es))))
  
 (claim step-list->vec->list=id
-  (Pi ([E U] [hd E] [tl (List E)])
+  (Pi ((E U) (hd E) (tl (List E)))
     (-> (= (List E)        tl  (vec->list E       (length E tl)  (list->vec-better E        tl)))
         (= (List E) (:: hd tl) (vec->list E (add1 (length E tl)) (list->vec-better E (:: hd tl)))))))
 (define step-list->vec->list=id
@@ -196,7 +196,7 @@
                                         ;; "it follows from the definitions."
 
 (claim list->vec->list=id
-  (Pi ([E U] [es (List E)])
+  (Pi ((E U) (es (List E)))
    (= (List E) es (vec->list E (length E es)
                    (list->vec-better E es)))))
 (define list->vec->list=id

@@ -5,7 +5,7 @@
 ;; (X -> Absurd).
 ;;
 (claim Dec
-  (Pi ([X U]) U))
+  (Pi ((X U)) U))
 (define Dec
   (lambda (X)
     (Either X (-> X Absurd))))
@@ -15,12 +15,12 @@
 ;;
 ;; We can't prove it, but we can state it.
 (claim Pem
-  (Pi ([X U])
+  (Pi ((X U))
     (Dec X)))
 
 ;; double negative elimination
 (claim Dne
-  (Pi ([X U])
+  (Pi ((X U))
     (-> (-> (-> X Absurd)
             Absurd)
         X)))
@@ -33,7 +33,7 @@
 ;; in English - if a type X is decidable,
 ;; then if X is not false, it is true.
 (claim pem-implies-dne
-  (Pi ([X U])
+  (Pi ((X U))
     (-> (Dec X)
         (-> (-> (-> X Absurd)
                 Absurd)

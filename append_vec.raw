@@ -23,14 +23,14 @@
 ;; over the length 'j' vector, while the
 ;; length 'k' vector is the base case.
 (claim mot-append-vec
-  (Pi ([E U] [k Nat] [j Nat])
+  (Pi ((E U) (k Nat) (j Nat))
     (-> (Vec E j) U)))
 (define mot-append-vec
   (lambda (E k j)
     (lambda (_) (Vec E (+ j k))))) ;; ignore the Vec argument
 
 (claim base-append-vec
-  (Pi ([E U] [k Nat])
+  (Pi ((E U) (k Nat))
     (-> (Vec E k) 
         (mot-append-vec E k zero vecnil))))
 (define base-append-vec
@@ -38,7 +38,7 @@
     (lambda (ws) ws)))
 
 (claim step-append-vec
-  (Pi ([E U] [k Nat] [j Nat] [h E] [t (Vec E j)])
+  (Pi ((E U) (k Nat) (j Nat) (h E) (t (Vec E j)))
     (-> (mot-append-vec E k j t)
         (mot-append-vec E k (add1 j) (vec:: h t)))))
 (define step-append-vec
@@ -47,7 +47,7 @@
       (vec:: h sofar))))
 
 (claim append-vec
-  (Pi ([E U] [j Nat] [k Nat])
+  (Pi ((E U) (j Nat) (k Nat))
     (-> (Vec E j)
         (Vec E k)
         (Vec E (+ j k)))))

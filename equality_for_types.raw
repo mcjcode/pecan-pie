@@ -1,5 +1,5 @@
 (claim x-implies-x-and-x
-  (Pi ([X U])
+  (Pi ((X U))
     (-> X (Pair X X))))
 ;; the proof below feels like
 ;; the only one available.
@@ -9,7 +9,7 @@
       (cons x x))))
 
 (claim x-and-x-implies-x
-  (Pi ([X U])
+  (Pi ((X U))
     (-> (Pair X X)
         X)))
 ;; note that we can replace 'car'
@@ -20,7 +20,7 @@
       (car x-and-x))))
 
 (claim Iff
-  (Pi ([X U] [Y U])
+  (Pi ((X U) (Y U))
     U))
 (define Iff
   (lambda (X Y)
@@ -28,7 +28,7 @@
           (-> Y X))))
 
 (claim x-iff-x
-  (Pi ([X U])
+  (Pi ((X U))
     (Iff X X)))
 (define x-iff-x
   (lambda (X)
@@ -36,7 +36,7 @@
           (lambda (x) x))))
 
 (claim x-iff-x-and-x
-  (Pi ([X U])
+  (Pi ((X U))
     (Iff X (Pair X X))))
 (define x-iff-x-and-x
   (lambda (X)
@@ -60,7 +60,7 @@
 ;; But are they equal?  Try executing this:
 ;;
 ;; (claim x-equals-x-and-x
-;;   (Pi ([X U])
+;;   (Pi ((X U))
 ;;     (= U X (Pair X X))))
 ;; (define x-equals-x-and-x
 ;;   (lambda (X)
@@ -77,18 +77,18 @@
 ;; by Nat.
 
 (claim Iso
-  (Pi ([X U] [Y U])
+  (Pi ((X U) (Y U))
     U))
 (define Iso
   (lambda (X Y)
-    (Sigma ([f (-> X Y)]  ;; note that we have two 'dependees'
-        [g (-> Y X)]) ;; here, so really, nested Sigma-expressions
-      (Pair (Pi ([x X]) (= X x (g (f x))))
-            (Pi ([y Y]) (= Y y (f (g y))))))))
+    (Sigma ((f (-> X Y))  ;; note that we have two 'dependees'
+        (g (-> Y X))) ;; here, so really, nested Sigma-expressions
+      (Pair (Pi ((x X)) (= X x (g (f x))))
+            (Pi ((y Y)) (= Y y (f (g y))))))))
 
 ;; X is isomorphic to X
 (claim X-iso-X
-  (Pi ([X U])
+  (Pi ((X U))
     (Iso X X)))
 (define X-iso-X
   (lambda (X)
@@ -100,7 +100,7 @@
 ;; This only seems reasonable.  But is it true?
 ;; Yes it is.
 (claim equal-implies-isomorphic
-  (Pi ([X U] [Y U])
+  (Pi ((X U) (Y U))
     (-> (= U X Y)
         (Iso X Y))))
 (define equal-implies-isomorphic
@@ -111,7 +111,7 @@
         (X-iso-X X)))))
 
 (claim isomorphic-implies-iff
-  (Pi ([X U] [Y U])
+  (Pi ((X U) (Y U))
     (-> (Iso X Y)
         (Iff X Y))))
 (define isomorphic-implies-iff

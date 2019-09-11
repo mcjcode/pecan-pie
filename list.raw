@@ -42,7 +42,7 @@
 
 ;; in haskell I'd write this:
 ;;
-;; snoc [] e = e
+;; snoc () e = e
 ;; snoc (x:xs) e = x:(snoc xs e)
 ;;
 (claim snoc

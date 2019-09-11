@@ -18,14 +18,14 @@
   (-> Nat U))
 (define Even
   (lambda (n)
-    (Sigma ([k Nat])
+    (Sigma ((k Nat))
       (= Nat n (double k)))))
 
 (claim Odd
   (-> Nat U))
 (define Odd
   (lambda (n)
-    (Sigma ([k Nat])
+    (Sigma ((k Nat))
       (= Nat n (add1 (double k))))))
 
 (claim fadd1
@@ -35,27 +35,27 @@
     (add1 n)))
 
 (claim even+1-is-odd
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (Even n)
       (Odd (add1 n)))))
 (define even+1-is-odd
   (lambda (n)
-    (lambda (n-is-even) ;; we have that (Sigma ([k Nat]) (= Nat n (double k))
+    (lambda (n-is-even) ;; we have that (Sigma ((k Nat)) (= Nat n (double k))
                    ;;
                    ;; in short, if k is the k that exists to show n even
                    ;; then k is also the k that exists to show (add1 n) odd.
                    ;;
-                   ;; want that (Sigma ([k Nat]) (= Nat (add1 n) (add1 (double k))))
+                   ;; want that (Sigma ((k Nat)) (= Nat (add1 n) (add1 (double k))))
       (cons (car n-is-even)
             (cong (cdr n-is-even) fadd1)))))
 
 (claim odd+1-is-even
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (Odd n)
       (Even (add1 n)))))
 (define odd+1-is-even
   (lambda (n)
-    (lambda (n-is-odd) ;; we know (Sigma ([k Nat]) (= Nat n (add1 (double k)))
+    (lambda (n-is-odd) ;; we know (Sigma ((k Nat)) (= Nat n (add1 (double k)))
       (cons (add1 (car n-is-odd)) ;; if n = 2*k+1 then n+1 = 2*(k+1)
             (cong (cdr n-is-odd) fadd1))))) ;; again, happy we're using double
                                             ;; and not twice.
@@ -63,7 +63,7 @@
 ;; Now we prove that all Nat's are either
 ;; Even or Odd.
 (claim mot-either-all-nats-are-even-or-odd
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (->(Either (Even n) (Odd n))
        U)))
 (define mot-either-all-nats-are-even-or-odd
@@ -78,7 +78,7 @@
   (left (cons zero (same zero))))
 
 (claim step-all-nats-are-even-or-odd
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (Either (Even       n ) (Odd       n))
         (Either (Even (add1 n)) (Odd (add1 n))))))
 (define step-all-nats-are-even-or-odd
@@ -91,7 +91,7 @@
 
 ;; here is our claim.
 (claim all-nats-are-even-or-odd
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (Either (Even n) (Odd n))))
 (define all-nats-are-even-or-odd
   (lambda (n)

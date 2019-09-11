@@ -11,9 +11,9 @@
 ;; start reading down at the claim for front.
 
 (claim mot-front
-  (Pi ([E U]
-       [n Nat]
-       [es (Vec E n)])
+  (Pi ((E U)
+       (n Nat)
+       (es (Vec E n)))
     U))
 ;;
 ;; would like to write
@@ -32,13 +32,13 @@
 (define mot-front
   (lambda (E) ;; this is passed to mot in defining the motive
     (lambda (n _es) ;; these are the arguments to the motive (dimming es)
-      (Pi ([j Nat])
+      (Pi ((j Nat))
         (-> (= Nat n (add1 j))
             E)))))
 
 (claim base-front
-  (Pi ([E U])
-    (Pi ([j Nat])
+  (Pi ((E U))
+    (Pi ((j Nat))
       ;; Notice that we'll never be able
       ;; to supply the following evidence.
       (-> (= Nat 0 (add1 j))  
@@ -55,23 +55,23 @@
           E)))))
 
 (claim step-front
-  (Pi ([E U]
-       [n Nat]
-       [e E]
-       [es (Vec E n)])
+  (Pi ((E U)
+       (n Nat)
+       (e E)
+       (es (Vec E n)))
     (-> (mot-front E       n           es)
         (mot-front E (add1 n) (vec:: e es)))))
 (define step-front
   (lambda (E) ;; passed in to create the step that ind-Vec expects
     (lambda (n e es) ;; the arguments to an ind-Vec step function
-      (lambda (prev) ;; a (Pi ([j Nat]) (-> (= Nat n (add1 j)) E))
+      (lambda (prev) ;; a (Pi ((j Nat)) (-> (= Nat n (add1 j)) E))
         (lambda (j) (lambda (n+1==add1j) e) )))))
 
 ;; first, note how it is impossible
 ;; to pass in a length 0 Vec, since
 ;; the type of the Vec precludes this.
 (claim front
-  (Pi ([E U] [n Nat])
+  (Pi ((E U) (n Nat))
     (-> (Vec E (add1 n))
         E)))
 (define front

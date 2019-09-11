@@ -4,12 +4,13 @@
 
 ;;
 ;; the key, to me, is observing that eliminators
-;; such as which-Nat are able to tell Nats apart.
+;; such as which-Nat are able to tell zero and non-zero
+;; Nats apart.
 ;;
 
 ;; Based on this observation, we define an ind-Nat motive
 ;;
-;;   0          -->  Trivial
+;;   0          -->  (= Nat 0 0)
 ;;   Otherwise  -->  Absurd
 ;;
 (claim WhatIfZero=
@@ -17,13 +18,13 @@
 (define WhatIfZero=
   (lambda (n)
     (which-Nat n
-      Trivial
+      (= Nat zero zero)
       (lambda (_)
         Absurd))))
 
 ;; If you pass in 0, you get back a
 ;;
-;; (-> (= Nat 0 0) Trivial)
+;; (-> (= Nat 0 0) (= Nat 0 0))
 ;;
 ;; which tells you nothing
 ;;
@@ -35,7 +36,7 @@
 ;; proving that 0 and n are not equal.
 ;;
 (claim zero?
-  (Pi ([n Nat])
+  (Pi ((n Nat))
     (-> (= Nat 0 n)
         (WhatIfZero= n))))
 (define zero?
@@ -43,7 +44,7 @@
     (lambda (zero=n)
       (replace zero=n
         WhatIfZero= ;; the motive
-        sole))))    ;; the base (the only value of type (WhatIfZero= 0))
+        (same zero)))))    ;; the base (the only value of type (WhatIfZero= 0))
 
 ;;
 ;; Try it out.
@@ -53,16 +54,30 @@
 (define zero-does-not-equal-one
   (zero? 1))
 
-;; zero-does-not-equal-one
-;;
+(zero? 1)
 ;; (the (→ (= Nat 0 1)
 ;;        Absurd)
-;;   (lambda (zero=n)
+;;   (λ (zero=n)
 ;;     (the Absurd
 ;;       (replace zero=n
 ;;         (λ (n)
 ;;           (which-Nat n
-;;              (the U Trivial)
+;;              (the U
+;;                (= Nat 0 0))
 ;;              (λ (_)
 ;;                Absurd)))
-;;         sole))))
+;;         (same 0)))))
+
+(zero? 0)
+;; (the (→ (= Nat 0 0)
+;;        (= Nat 0 0))
+;;   (λ (zero=n)
+;;     (replace zero=n
+;;       (λ (n)
+;;         (which-Nat n
+;;            (the U
+;;              (= Nat 0 0))
+;;            (λ (_)
+;;              Absurd)))
+;;       (same 0))))
+

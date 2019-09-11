@@ -1,18 +1,18 @@
 (claim Maybe
-  (Pi ([E U]) U))
+  (Pi ((E U)) U))
 (define Maybe
   (lambda (E)
     (Either E Trivial)))
 
 (claim just
-  (Pi ([E U])
+  (Pi ((E U))
     (-> E (Maybe E))))
 (define just
   (lambda (E)
     (lambda (e) (left e))))
 
 (claim nothing
-  (Pi ([E U])
+  (Pi ((E U))
     (Maybe E)))
 (define nothing
   (lambda (E) (right sole)))
