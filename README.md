@@ -1,22 +1,33 @@
--- The four types of judgments
+## Introduction
 
-EXP is a TYPE.
+Notes, examples, and exercises worked out in Pie while learning
+from Friedman and Christiansen's The Little Typer.
 
-EXP is the same TYPE as EXP.
+All source code files are given in a '.raw' format.  This differs from
+a pie source code file in that it omits Racket's language
+specification line and optionally contains '@(include "filename.raw")'
+lines for inlining the contents of other files, so that I wouldn't
+have to duplicate commonly used code in separate files.
 
-TYPE is a type.
+The run.sh script reconstitutes executable Pie source by prepending
+the language specification line and running the Racket preprocessor
+`mztext` to effect the inlining.  Sadly, I don't know how to use
+the preprocessor syntax to prevent duplicate includes, so eventually
+this will not be sustainable.
 
-TYPE and TYPE are the same type.
+## The four types of judgments
 
--- Some commands to remember
+* EXP is a TYPE.
+* EXP is the same TYPE as EXP (e.g. 3 is the same Nat as 3)
+* TYPE is a type.
+* TYPE and TYPE are the same type.
 
-`raco pkg install pie`
+## Some commands to remember
 
-`racket -l pie -i`
-
-`racket --load filename.pie`
-
-`grep '^(claim [a-z]' plus_is_commutative.raw | egrep -v "base|step|mot|part1"`
+* `raco pkg install pie`
+* `racket -l pie -i`
+* `racket --load filename.pie`
+* `grep '^(claim [a-z]' plus_is_commutative.raw | egrep -v "base|step|mot|part1"`
 
 # H2 Wishlist
 
@@ -31,7 +42,7 @@ When I should have just been running
 
 `racket file.pie`
 
--- 'sameness' vs 'equality' for functions.
+## 'sameness' vs 'equality' for functions.
 
 It seems like this is the difference Church makes when discussion
 'extensionality' and 'intensionality'.  Two functions are
@@ -40,7 +51,7 @@ intended or not.)  Two functions are 'intensionally' the same if they
 do the same operations (i.e. they have been defined to do the same
 things, i.e. intentionally, or on purpose)
 
--- motives
+## Motives
 
 A motive tells us what we want to get out of something.  Like, your
 motive for taking this class is what you want to get out of this
